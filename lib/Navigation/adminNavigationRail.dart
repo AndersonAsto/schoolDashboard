@@ -6,14 +6,14 @@ import 'package:schooldashboard/Screens/schedulesScreen.dart';
 import 'package:schooldashboard/Screens/studentsScreen.dart';
 import 'package:schooldashboard/Screens/usersScreen.dart';
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+class AdminNavigationRail extends StatefulWidget {
+  const AdminNavigationRail({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  State<AdminNavigationRail> createState() => _AdminNavigationRailState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _AdminNavigationRailState extends State<AdminNavigationRail> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
