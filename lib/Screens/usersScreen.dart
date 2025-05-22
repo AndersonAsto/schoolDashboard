@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:schooldashboard/Global/global.dart';
 import 'dart:convert';
+import 'package:schooldashboard/Utils/allNotifications.dart';
 
 class UsersScreenClass extends StatefulWidget {
   const UsersScreenClass({super.key});
@@ -18,10 +20,26 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
   TextEditingController statusController = TextEditingController();
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
+  TextEditingController personDisplayController = TextEditingController();
 
-  Map<String,dynamic>? savedRole;
+  Map<String,dynamic>? savedUsers;
 
-  Future<void> _guardarRol() async {
+  Future<void> saveUser() async {
+    if(
+      personIdController.text.trim().isEmpty ||
+      userNameController.text.trim().isEmpty ||
+      passwordController.text.trim().isEmpty ||
+      roleController.text.trim().isEmpty
+    ){
+      Notificaciones.mostrarMensaje(context, "Algunos campos aún están vacíos.", color: Colors.red);
+      return;
+    }
+
+    if (idToEdit != null) {
+      Notificaciones.mostrarMensaje(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      return;
+    }
+
     final url = Uri.parse('http://localhost:3000/api/user/register');
     final response = await http.post(
       url,
@@ -35,37 +53,112 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
     );
 
     if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
       setState(() {
-        _listarRoles();
+        savedUsers = data;
+        idController.text = data['id'].toString();
+        statusController.text = data['estado'].toString();
+        createdAtController.text = data['createdAt'].toString();
+        updatedAtController.text = data['updatedAt'].toString();
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Rol guardado correctamente')),
-      );
+      clearTextFields();
+      idToEdit = null;
+      getUsers();
+      Notificaciones.mostrarMensaje(context, "Usuario guardado correctamente", color: Colors.green);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al guardar el rol')),
-      );
+      Notificaciones.mostrarMensaje(context, "Error al guardar usuario", color: Colors.red);
+      print("Error al guardar usuario: ${response.body}");
     }
   }
 
-  List<dynamic> listaRoles = [];
+  void clearTextFields (){
+    idController.clear();
+    personIdController.clear();
+    userNameController.clear();
+    passwordController.clear();
+    roleController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+    personDisplayController.clear();
+  }
 
-  Future<void> _listarRoles() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/api/user/list'));
+  List<Map<String, dynamic>> usersList = [];
+
+  Future<void> getUsers() async {
+    final url = Uri.parse('http://localhost:3000/api/user/list');
+    final response = await http.get(url);
+
     if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
       setState(() {
-        listaRoles = jsonDecode(response.body);
+        usersList = List<Map<String, dynamic>>.from(data);
       });
+    } else {
+      print("Error al obtener datos de usuarios: ${response.body}");
+    }
+  }
+
+  int? idToEdit;
+
+  Future<void> updateUser () async {
+    if (idToEdit == null) {
+      Notificaciones.mostrarMensaje(context, "Selecciona un usuario para actualizar", color: Colors.red);
+      return;
+    }
+
+    final url = Uri.parse('http://localhost:3000/api/user/update/$idToEdit');
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "persona_id": int.parse(personIdController.text),
+        "username": userNameController.text,
+        "password_hash": passwordController.text,
+        "rol": roleController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      getUsers();
+    } else {
+      print("Error al actualizar usuario: ${response.body}");
+    }
+  }
+
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+    }
+  }
+
+  Future<void> deleteUser(int id) async {
+    final url = Uri.parse('http://localhost:3000/api/user/delete/$id');
+    final response = await http.delete(url);
+
+    if (response.statusCode == 200) {
+      print("Usuario eliminado: $id");
+      getUsers();
+    } else {
+      print("Error al eliminar usuario: ${response.body}");
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _listarRoles();
+    getUsers();
   }
 
-  Future<void> _mostrarSeleccionPersonas(BuildContext context) async {
+  Future<void> showPersonSelection(BuildContext context) async {
     final response = await http.get(Uri.parse('http://localhost:3000/api/person/personavailablestudent'));
     final List<dynamic> personas = jsonDecode(response.body);
 
@@ -81,12 +174,15 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
               itemCount: personas.length,
               itemBuilder: (context, index) {
                 final persona = personas[index];
-                return ListTile(
-                  title: Text('${persona['id']} - ${persona['nombre']} ${persona['apellido']}'),
-                  onTap: () {
-                    personIdController.text = persona['id'].toString();
-                    Navigator.of(context).pop();
-                  },
+                return Card(
+                  child: ListTile(
+                    title: Text('${persona['id']} - ${persona['nombre']} ${persona['apellido']}'),
+                    onTap: () {
+                      personIdController.text = persona['id'].toString();
+                      personDisplayController.text = '${persona['id']} - ${persona['nombre']} ${persona['apellido']}';
+                      Navigator.of(context).pop();
+                    },
+                  ),
                 );
               },
             ),
@@ -96,8 +192,8 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
     );
   }
 
-  void _mostrarSeleccionRol(BuildContext context) {
-    final roles = ['admin', 'docente', 'alumno'];
+  void showRoleSelection(BuildContext context) {
+    final roles = ['Administrador', 'Docente', 'Apoderado'];
 
     showDialog(
       context: context,
@@ -111,12 +207,14 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
               itemCount: roles.length,
               itemBuilder: (context, index) {
                 final rol = roles[index];
-                return ListTile(
-                  title: Text(rol),
-                  onTap: () {
-                    roleController.text = rol;
-                    Navigator.of(context).pop();
-                  },
+                return Card(
+                  child: ListTile(
+                    title: Text(rol),
+                    onTap: () {
+                      roleController.text = rol;
+                      Navigator.of(context).pop();
+                    },
+                  ),
                 );
               },
             ),
@@ -135,80 +233,83 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
         focusNode: FocusNode(),
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(10),
             child: Column(
               children: [
-                TextField(
-                  decoration: const InputDecoration(hintText: "Código"),
-                  controller: idController,
-                  enabled: false,
+                CommonInfoFields(idController: idController, statusController: statusController),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: CustomTextField(label: "Código de Persona", controller: personIdController)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => showPersonSelection(context),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            decoration: const InputDecoration(hintText: "Seleccionar Persona"),
+                            controller: personDisplayController,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Código de Persona"),
-                  controller: personIdController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Nombre de Usuario"),
-                  controller: userNameController,
-                  enabled: true,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Contraseña"),
-                  controller: passwordController,
-                  enabled: true,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Rol"),
-                  controller: roleController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Estado"),
-                  controller: statusController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Creado el..."),
-                  controller: createdAtController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Actualizado el..."),
-                  controller: updatedAtController,
-                  enabled: false,
-                ),
-                GestureDetector(
-                  onTap: () => _mostrarSeleccionPersonas(context),
-                  child: AbsorbPointer(
-                    child: TextField(
-                      decoration: const InputDecoration(hintText: "Código de Persona"),
-                      controller: personIdController,
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                        child: CustomTextField(label: "Nombre de Usuario", controller: userNameController)
                     ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => _mostrarSeleccionRol(context),
-                  child: AbsorbPointer(
-                    child: TextField(
-                      decoration: const InputDecoration(hintText: "Rol"),
-                      controller: roleController,
+                    const SizedBox(width: 10),
+                    Expanded(
+                        child: CustomTextField(label: "Contraseña", controller: passwordController),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 30),
-                ElevatedButton(onPressed: _guardarRol, child: Text("Guardar")),
-                const SizedBox(height: 30),
-                const Text('Lista de Usuarios Registrados'),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomTextField(label: "Rol", controller: roleController)
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => showRoleSelection(context),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            decoration: const InputDecoration(hintText: "Seleccionar Rol"),
+                            controller: roleController,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 10),
+                CommonTimestampsFields(createdAtController: createdAtController, updatedAtController: updatedAtController),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(onPressed: saveUser, child: const Text("Guardar")),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    ElevatedButton(onPressed: updateUser, child: const Text("Actualizar")),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text('Usuarios Registrados', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: listaRoles.length,
+                  itemCount: usersList.length,
                   itemBuilder: (context, index) {
-                    final rol = listaRoles[index];
+                    final user = usersList[index];
                     return ListTile(
-                      title: Text('${rol['username']} - ${rol['rol']}'),
-                      subtitle: Text('ID: ${rol['id']}, Persona: ${rol['persona']['nombre']} ${rol['persona']['apellido']}, Estado: ${rol['estado'] ? 'Activo' : 'Inactivo'}'),
+                      title: Text('${user['username']} - ${user['rol']}'),
+                      subtitle: Text('ID: ${user['id']}, Persona: ${user['persona']['nombre']} ${user['persona']['apellido']}, Estado: ${user['estado'] ? 'Activo' : 'Inactivo'}'),
                       trailing: Container(
                         width: 80,
                         child: Row(
@@ -216,8 +317,25 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             IconButton(
-                              onPressed: (){},
-                              icon: Icon(Icons.delete),
+                              onPressed: () {
+                                setState(() {
+                                  idToEdit = user['id'];
+                                  idController.text = user['id'].toString();
+                                  personIdController.text = user['persona']['id'].toString();
+                                  personDisplayController.text = '${user['persona']['id']} - ${user['persona']['nombre']} ${user['persona']['apellido']}';
+                                  userNameController.text = user['username'];
+                                  passwordController.text = user['password_hash'];
+                                  roleController.text = user['rol'];
+                                  statusController.text = user['estado'].toString();
+                                  createdAtController.text = user['createdAt'].toString();
+                                  updatedAtController.text = user['updatedAt'].toString();
+                                });
+                              },
+                              icon: const Icon(Icons.edit, color: Colors.blue,),
+                            ),
+                            IconButton(
+                              onPressed: () => deleteUser(user['id']),
+                              icon: const Icon(Icons.delete, color: Colors.red,),
                             ),
                           ],
                         ),

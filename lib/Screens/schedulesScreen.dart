@@ -21,6 +21,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   TextEditingController statusController = TextEditingController();
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
+  TextEditingController gradeDisplayController = TextEditingController();
 
   Map<String,dynamic>? savedSchedules;
 
@@ -41,7 +42,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
 
     if (response.statusCode == 201) {
       setState(() {
-        _listSchedules();
+        getSchedules();
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Horario guardado correctamente')),
@@ -55,7 +56,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
 
   List<dynamic> schedulesList = [];
 
-  Future<void> _listSchedules() async {
+  Future<void> getSchedules() async {
     final response = await http.get(Uri.parse('http://localhost:3000/api/schedule/list'));
     if (response.statusCode == 200) {
       setState(() {
@@ -67,10 +68,10 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   @override
   void initState() {
     super.initState();
-    _listSchedules();
+    getSchedules();
   }
 
-  Future<void> _showTeacherSelection(BuildContext context) async {
+  Future<void> showTeacherSelection(BuildContext context) async {
     final response = await http.get(Uri.parse('http://localhost:3000/api/user/teachers'));
     final List<dynamic> teachers = jsonDecode(response.body);
 
@@ -86,12 +87,14 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
               itemCount: teachers.length,
               itemBuilder: (context, index) {
                 final teacher = teachers[index];
-                return ListTile(
-                  title: Text('${teacher['id']} - ${teacher['nombre']} ${teacher['apellido']}'),
-                  onTap: () {
-                    teacherIdController.text = teacher['id'].toString();
-                    Navigator.of(context).pop();
-                  },
+                return Card(
+                  child: ListTile(
+                    title: Text('${teacher['id']} - ${teacher['nombre']} ${teacher['apellido']}'),
+                    onTap: () {
+                      teacherIdController.text = teacher['id'].toString();
+                      Navigator.of(context).pop();
+                    },
+                  ),
                 );
               },
             ),
@@ -101,7 +104,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
     );
   }
 
-  Future<void> _showCourseSelection(BuildContext context) async {
+  Future<void> showCourseSelection(BuildContext context) async {
     final response = await http.get(Uri.parse('http://localhost:3000/api/course/list'));
     final List<dynamic> courses = jsonDecode(response.body);
 
@@ -117,12 +120,14 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
               itemCount: courses.length,
               itemBuilder: (context, index) {
                 final course = courses[index];
-                return ListTile(
-                  title: Text('${course['id']} - ${course['nombre']}'),
-                  onTap: () {
-                    courseIdController.text = course['id'].toString();
-                    Navigator.of(context).pop();
-                  },
+                return Card(
+                  child: ListTile(
+                    title: Text('${course['id']} - ${course['nombre']}'),
+                    onTap: () {
+                      courseIdController.text = course['id'].toString();
+                      Navigator.of(context).pop();
+                    },
+                  ),
                 );
               },
             ),
@@ -132,7 +137,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
     );
   }
 
-  void _showDaySelection(BuildContext context) {
+  void showDaySelection(BuildContext context) {
     final days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
 
     showDialog(
@@ -147,12 +152,14 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
               itemCount: days.length,
               itemBuilder: (context, index) {
                 final day = days[index];
-                return ListTile(
-                  title: Text(day),
-                  onTap: () {
-                    dayController.text = day;
-                    Navigator.of(context).pop();
-                  },
+                return Card(
+                  child: ListTile(
+                    title: Text(day),
+                    onTap: () {
+                      dayController.text = day;
+                      Navigator.of(context).pop();
+                    },
+                  ),
                 );
               },
             ),
@@ -177,119 +184,129 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
         focusNode: FocusNode(),
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(10),
             child: Column(
               children: [
-                TextField(
-                  decoration: const InputDecoration(hintText: "Código"),
-                  controller: idController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Código de Persona"),
-                  controller: teacherIdController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Código de Curso"),
-                  controller: courseIdController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Código de Grado"),
-                  controller: gradeIdController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Código de Grado"),
-                  controller: dayController,
-                  enabled: false,
-                ),
-                TextField(
-                  controller: startTimeController,
-                  readOnly: true,
-                  decoration: const InputDecoration(hintText: "Hora de Inicio"),
-                  onTap: () async {
-                    TimeOfDay? picked = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.now(),
-                    );
-                    if (picked != null) {
-                      final formatted = picked.format(context); // "8:00 AM"
-                      final parsed = TimeOfDay(hour: picked.hour, minute: picked.minute);
-                      startTimeController.text = _formatTime(parsed);
-                    }
-                  },
-                ),
-                TextField(
-                  controller: endTimeController,
-                  readOnly: true,
-                  decoration: const InputDecoration(hintText: "Hora de Finalización"),
-                  onTap: () async {
-                    TimeOfDay? picked = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.now(),
-                    );
-                    if (picked != null) {
-                      endTimeController.text = _formatTime(picked);
-                    }
-                  },
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Estado"),
-                  controller: statusController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Creado el..."),
-                  controller: createdAtController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Actualizado el..."),
-                  controller: updatedAtController,
-                  enabled: false,
-                ),
-                GestureDetector(
-                  onTap: () => _showTeacherSelection(context),
-                  child: AbsorbPointer(
-                    child: TextField(
-                      decoration: const InputDecoration(hintText: "Seleccionar Docentes"),
-                      controller: teacherIdController,
+                CommonInfoFields(idController: idController, statusController: statusController),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: CustomTextField(label: "Código de Docente", controller: teacherIdController)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => showTeacherSelection(context),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            decoration: const InputDecoration(hintText: "Seleccionar Docentes"),
+                            controller: teacherIdController,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                GestureDetector(
-                  onTap: () => _showCourseSelection(context),
-                  child: AbsorbPointer(
-                    child: TextField(
-                      decoration: const InputDecoration(hintText: "Seleccionar Cursos"),
-                      controller: courseIdController,
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: CustomTextField(label: "Código de Curso", controller: courseIdController)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => showCourseSelection(context),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            decoration: const InputDecoration(hintText: "Seleccionar Cursos"),
+                            controller: courseIdController,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                GestureDetector(
-                  onTap: () async => await showGradeSelectionDialog(context, gradeIdController),
-                  child: AbsorbPointer(
-                    child: TextField(
-                      decoration: const InputDecoration(hintText: "Seleccionar Grados"),
-                      controller: gradeIdController,
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async => await showGradeSelection(context, gradeIdController, gradeDisplayController),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            decoration: const InputDecoration(hintText: "Seleccionar Grados"),
+                            controller: gradeIdController,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                GestureDetector(
-                  onTap: () => _showDaySelection(context),
-                  child: AbsorbPointer(
-                    child: TextField(
-                      decoration: const InputDecoration(hintText: "Seleccionar Días"),
-                      controller: dayController,
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(child: CustomTextField(label: "Día", controller: dayController)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => showDaySelection(context),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            decoration: const InputDecoration(hintText: "Seleccionar Días"),
+                            controller: dayController,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: startTimeController,
+                        readOnly: true,
+                        decoration: const InputDecoration(hintText: "Hora de Inicio"),
+                        onTap: () async {
+                          TimeOfDay? picked = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.now(),
+                          );
+                          if (picked != null) {
+                            final formatted = picked.format(context); // "8:00 AM"
+                            final parsed = TimeOfDay(hour: picked.hour, minute: picked.minute);
+                            startTimeController.text = _formatTime(parsed);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: endTimeController,
+                        readOnly: true,
+                        decoration: const InputDecoration(hintText: "Hora de Finalización"),
+                        onTap: () async {
+                          TimeOfDay? picked = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.now(),
+                          );
+                          if (picked != null) {
+                            endTimeController.text = _formatTime(picked);
+                          }
+                        },
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 10),
+                CommonTimestampsFields(createdAtController: createdAtController, updatedAtController: updatedAtController),
+                const SizedBox(height: 20),
                 ElevatedButton(onPressed: _saveSchedule, child: Text("Guardar")),
-                const SizedBox(height: 30),
-                const Text('Lista de Horarios Registrados'),
+                const SizedBox(height: 20),
+                const Text('Horarios Registrados', style: TextStyle(fontWeight: FontWeight.bold),),
+                const SizedBox(height: 20),
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -312,7 +329,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                           children: [
                             IconButton(
                               onPressed: (){},
-                              icon: Icon(Icons.delete),
+                              icon: const Icon(Icons.delete, color: Colors.red,),
                             ),
                           ],
                         ),

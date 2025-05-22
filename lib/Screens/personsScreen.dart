@@ -18,23 +18,29 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
   TextEditingController dniController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
-  TextEditingController stateController = TextEditingController();
+  TextEditingController statusController = TextEditingController();
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
 
-  Map<String,dynamic>? personaGuardada;
+  Map<String, dynamic>? savedPersons;
 
   Future<void> savePerson() async {
-    if(
-    nameController.text.trim().isEmpty ||
-    lastNameController.text.trim().isEmpty ||
-    dniController.text.trim().isEmpty ||
-    emailController.text.trim().isEmpty ||
-    phoneController.text.trim().isEmpty
+    if (
+      nameController.text.trim().isEmpty ||
+      lastNameController.text.trim().isEmpty ||
+      dniController.text.trim().isEmpty ||
+      emailController.text.trim().isEmpty ||
+      phoneController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Un dato está vacío.", color: Colors.red);
+      Notificaciones.mostrarMensaje(context, "Algunos de los campos aún están vacíos.", color: Colors.red);
       return;
     }
+
+    if (idToEdit != null) {
+      Notificaciones.mostrarMensaje(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      return;
+    }
+
     final url = Uri.parse('${generalURL}api/person/register');
     final response = await http.post(
       url,
@@ -51,29 +57,35 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       setState(() {
-        personaGuardada = data;
+        savedPersons = data;
         idController.text = data['id'].toString();
-        stateController.text = data['estado'].toString();
+        statusController.text = data['estado'].toString();
         createdAtController.text = data['createdAt'].toString();
         updatedAtController.text = data['updatedAt'].toString();
       });
-      idController.clear();
-      nameController.clear();
-      lastNameController.clear();
-      dniController.clear();
-      emailController.clear();
-      phoneController.clear();
-      stateController.clear();
-      createdAtController.clear();
-      updatedAtController.clear();
+      clearTextFields();
+      idToEdit = null;
       getPersons();
-      Notificaciones.mostrarMensaje(context, "Curso guardado correctamente", color: Colors.green);
+      Notificaciones.mostrarMensaje(context, "Persona guardada correctamente", color: Colors.green);
     } else {
+      Notificaciones.mostrarMensaje(context, "Error al guardar persona", color: Colors.red);
       print("Error al guardar grado: ${response.body}");
     }
   }
 
-  List<Map<String,dynamic>> personas = [];
+  void clearTextFields (){
+    idController.clear();
+    nameController.clear();
+    lastNameController.clear();
+    dniController.clear();
+    emailController.clear();
+    phoneController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+  }
+
+  List<Map<String, dynamic>> personsList = [];
 
   Future<void> getPersons() async {
     final url = Uri.parse('${generalURL}api/person/list');
@@ -82,10 +94,52 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       setState(() {
-        personas = List<Map<String, dynamic>>.from(data);
+        personsList = List<Map<String, dynamic>>.from(data);
       });
     } else {
       print("Error al obtener datos de personas: ${response.body}");
+    }
+  }
+
+  int? idToEdit;
+
+  Future<void> updatePerson () async {
+    if (idToEdit == null) {
+      Notificaciones.mostrarMensaje(context, "Selecciona un curso para actualizar", color: Colors.red);
+      return;
+    }
+
+    final url = Uri.parse('http://localhost:3000/api/person/update/$idToEdit');
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "nombre": nameController.text,
+        "apellido": lastNameController.text,
+        "dni": dniController.text,
+        "correo": emailController.text,
+        "telefono": phoneController.text
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      getPersons();
+    } else {
+      print("Error al actualizar persona: ${response.body}");
+    }
+  }
+
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
     }
   }
 
@@ -110,76 +164,65 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black,),
+      appBar: AppBar(
+        title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),),
+        backgroundColor: Colors.black,
+      ),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
         focusNode: FocusNode(),
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.all(10),
             child: Column(
               children: [
-                TextField(
-                  decoration: const InputDecoration(hintText: "Código"),
-                  controller: idController,
-                  enabled: false,
+                CommonInfoFields(idController: idController, statusController: statusController),
+                const SizedBox(height: 10),
+                CustomTextField(label: "Nombres", controller: nameController),
+                const SizedBox(height: 10),
+                CustomTextField(label: "Apellidos", controller: lastNameController),
+                const SizedBox(height: 10),
+                CustomTextField(label: "Correo", controller: emailController),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomTextField(label: "DNI", controller: dniController, keyboardType: TextInputType.number,)
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: CustomTextField(label: "Teléfono", controller: phoneController, keyboardType: TextInputType.number,)
+                    ),
+                  ],
                 ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Nombres"),
-                  controller: nameController,
-                  enabled: true,
+                const SizedBox(height: 10),
+                CommonTimestampsFields(createdAtController: createdAtController, updatedAtController: updatedAtController),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(onPressed: savePerson, child: const Text("Guardar")),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    ElevatedButton(onPressed: updatePerson, child: const Text("Actualizar")),
+                  ],
                 ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Apellidos"),
-                  controller: lastNameController,
-                  enabled: true,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "DNI"),
-                  controller: dniController,
-                  enabled: true,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Correo"),
-                  controller: emailController,
-                  enabled: true,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Teléfono"),
-                  controller: phoneController,
-                  enabled: true,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Estado"),
-                  controller: stateController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Creado el..."),
-                  controller: createdAtController,
-                  enabled: false,
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: "Actualizado el..."),
-                  controller: updatedAtController,
-                  enabled: false,
-                ),
-                ElevatedButton(onPressed: savePerson, child: Text("Guardar")),
-                const SizedBox(height: 30),
-                const Text("Grados registrados:", style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+                const Text("Personas Registradas", style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
                 ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemCount: personas.length,
+                  itemCount: personsList.length,
                   itemBuilder: (context, index) {
-                    final persons = personas[index];
+                    final person = personsList[index];
                     return ListTile(
-                      title: Text("ID: ${persons['id']} - ${persons['nombre']}"),
+                      title: Text("ID: ${person['id']} - ${person['nombre']}"),
                       subtitle: Text(
-                          "Nombres y Apellidos: ${persons['nombre']} ${persons['apellido']}\n"
-                          "DNI: ${persons['dni']}\n"
-                          "Correo: ${persons['correo']} | Teléfono: ${persons['telefono']}\n"
-                          "Estado: ${persons['estado'] == true? 'Activo': 'Inactivo'} | Creado: ${persons['createdAt']}"),
+                        "Nombres y Apellidos: ${person['nombre']} ${person['apellido']}\n"
+                        "DNI: ${person['dni']}\n"
+                        "Correo: ${person['correo']} | Teléfono: ${person['telefono']}\n"
+                        "Estado: ${person['estado'] == true ? 'Activo' : 'Inactivo'} | Creado: ${person['createdAt']}"
+                      ),
                       trailing: Container(
                         width: 80,
                         child: Row(
@@ -187,8 +230,25 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             IconButton(
-                              onPressed: () => deletePerson(persons['id']),
-                              icon: Icon(Icons.delete),
+                              onPressed: () {
+                                setState(() {
+                                  idToEdit = person['id'];
+                                  idController.text = person['id'].toString();
+                                  nameController.text = person['nombre'];
+                                  lastNameController.text = person['apellido'];
+                                  dniController.text = person['dni'];
+                                  emailController.text = person['correo'];
+                                  phoneController.text = person['telefono'];
+                                  statusController.text = person['estado'].toString();
+                                  createdAtController.text = person['createdAt'].toString();
+                                  updatedAtController.text = person['updatedAt'].toString();
+                                });
+                              },
+                              icon: const Icon(Icons.edit, color: Colors.blue,),
+                            ),
+                            IconButton(
+                              onPressed: () => deletePerson(person['id']),
+                              icon: const Icon(Icons.delete, color: Colors.red,),
                             ),
                           ],
                         ),
@@ -199,7 +259,7 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
               ],
             ),
           ),
-        ) ,
+        ),
       ),
     );
   }
