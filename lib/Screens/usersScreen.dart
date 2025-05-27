@@ -99,6 +99,8 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
     }
   }
 
+  bool _showPassword = false;
+
   int? idToEdit;
 
   Future<void> updateUser () async {
@@ -160,7 +162,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
 
   Future<void> showPersonSelection(BuildContext context) async {
     final response = await http.get(Uri.parse('http://localhost:3000/api/person/personavailablestudent'));
-    final List<dynamic> personas = jsonDecode(response.body);
+    final List<dynamic> persons = jsonDecode(response.body);
 
     showDialog(
       context: context,
@@ -171,15 +173,15 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: personas.length,
+              itemCount: persons.length,
               itemBuilder: (context, index) {
-                final persona = personas[index];
+                final person = persons[index];
                 return Card(
                   child: ListTile(
-                    title: Text('${persona['id']} - ${persona['nombre']} ${persona['apellido']}'),
+                    title: Text('${person['id']} - ${person['nombre']} ${person['apellido']}'),
                     onTap: () {
-                      personIdController.text = persona['id'].toString();
-                      personDisplayController.text = '${persona['id']} - ${persona['nombre']} ${persona['apellido']}';
+                      personIdController.text = person['id'].toString();
+                      personDisplayController.text = '${person['id']} - ${person['nombre']} ${person['apellido']}';
                       Navigator.of(context).pop();
                     },
                   ),
@@ -240,7 +242,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Persona", controller: personIdController)),
+                    Expanded(child: CustomTextField(label: "Código de Persona", controller: personIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
@@ -263,7 +265,23 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                        child: CustomTextField(label: "Contraseña", controller: passwordController),
+                      child: TextField(
+                        controller: passwordController,
+                        obscureText: !_showPassword,
+                        decoration: InputDecoration(
+                          labelText: "Contraseña",
+                          suffixIcon: IconButton(
+                            icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off),
+                            onPressed: () {
+                              setState(() {
+                                _showPassword = !_showPassword;
+                              });
+                            },
+                          ),
+                          enabled: false,
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -271,7 +289,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                 Row(
                   children: [
                     Expanded(
-                      child: CustomTextField(label: "Rol", controller: roleController)
+                      child: CustomTextField(label: "Rol", controller: roleController, enabled: false,)
                     ),
                     const SizedBox(width: 10),
                     Expanded(

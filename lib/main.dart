@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:schooldashboard/LogIn/principalLogIn.dart';
 import 'package:schooldashboard/Navigation/adminNavigationRail.dart';
 
 void main() {
@@ -19,7 +20,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'schoolDashboard',
       debugShowCheckedModeBanner: false,
-      home: AdminNavigationRail(),
+      home: PrincipalLogInScreen(),
       theme: ThemeData(
         useMaterial3: true,
         primarySwatch: Colors.teal,

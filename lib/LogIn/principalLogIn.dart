@@ -1,6 +1,11 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:schooldashboard/Global/global.dart';
+import 'package:schooldashboard/Navigation/adminNavigationRail.dart';
 
 class PrincipalLogInScreen extends StatefulWidget {
+  const PrincipalLogInScreen({super.key});
+
   @override
   State<PrincipalLogInScreen> createState() => _PrincipalLogInScreenState();
 }
@@ -9,21 +14,196 @@ class _PrincipalLogInScreenState extends State<PrincipalLogInScreen> {
   TextEditingController userController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
+  final List<String> items = [
+    'Administrador',
+    'Docente',
+    'Apoderado'
+  ];
+
+  String? selectedValue;
+
   @override
   Widget build(BuildContext context){
     double screenX = MediaQuery.of(context).size.width;
     double screenY = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Container(
-            height: screenY * 0.5,
-            width: screenX * 0.5,
-            child: Column(),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset('assets/bg/bg002.webp', fit: BoxFit.cover,),
           ),
-        ),
-      ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                height: screenY * 0.8,
+                width: screenX * 0.8,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      offset: const Offset(0, 10),
+                      blurRadius: 50,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                  color: const Color(0xf2e5eaf6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            DropdownButtonHideUnderline(
+                              child: DropdownButton2<String>(
+                                isExpanded: true,
+                                hint: const Row(
+                                  children: [
+                                    Icon(Icons.list, size: 16, color: Colors.white,),
+                                    SizedBox(width: 4,),
+                                    Expanded(
+                                      child: Text('Seleccionar Rol',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          shadows: [
+                                            Shadow(
+                                              offset: Offset(1, 1),
+                                              blurRadius: 2,
+                                              color: Colors.black26,
+                                            ),
+                                          ],
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                items: items
+                                    .map((String item) => DropdownMenuItem<String>(
+                                  value: item,
+                                  child: Text(item,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          offset: Offset(1, 1),
+                                          blurRadius: 2,
+                                          color: Colors.black26,
+                                        ),
+                                      ],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                )).toList(),
+                                value: selectedValue,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedValue = value;
+                                  });
+                                },
+                                buttonStyleData: ButtonStyleData(
+                                  height: 50,
+                                  width: 160,
+                                  padding: const EdgeInsets.only(left: 14, right: 14),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: Colors.black26,
+                                    ),
+                                    color: Colors.teal,
+                                  ),
+                                  elevation: 2,
+                                ),
+                                iconStyleData: const IconStyleData(
+                                  icon: Icon(
+                                    Icons.arrow_forward_ios_outlined,
+                                  ),
+                                  iconSize: 14,
+                                  iconEnabledColor: Colors.white,
+                                  iconDisabledColor: Colors.grey,
+                                ),
+                                dropdownStyleData: DropdownStyleData(
+                                  maxHeight: 200,
+                                  width: 200,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(14),
+                                    color: Colors.teal,
+                                  ),
+                                  offset: const Offset(-20, 0),
+                                  scrollbarTheme: ScrollbarThemeData(
+                                    radius: const Radius.circular(40),
+                                    thickness: MaterialStateProperty.all(6),
+                                    thumbVisibility: MaterialStateProperty.all(true),
+                                  ),
+                                ),
+                                menuItemStyleData: const MenuItemStyleData(
+                                  height: 40,
+                                  padding: EdgeInsets.only(left: 14, right: 14),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            CustomTextField(label: "Usuario", controller: userController),
+                            const SizedBox(height: 20),
+                            CustomTextField(label: "Contraseña", controller: passwordController),
+                            const SizedBox(height: 30),
+                            ElevatedButton(
+                                onPressed: (){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminNavigationRail()),);
+                                },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal
+                              ),
+                              child: const Text("Iniciar Sesión",
+                                  style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  shadows: [
+                                    Shadow(
+                                      offset: Offset(1, 1),
+                                      blurRadius: 2,
+                                      color: Colors.black26,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(16),
+                          bottomRight: Radius.circular(16),
+                        ),
+                        child: Image.asset(
+                          'assets/card/card1.jpg',
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      )
     );
   }
 }

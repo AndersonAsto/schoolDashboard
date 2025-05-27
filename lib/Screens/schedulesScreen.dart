@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:schooldashboard/Global/global.dart';
+import 'package:schooldashboard/Utils/allNotifications.dart';
 
 class SchedulesScreenClass extends StatefulWidget {
   const SchedulesScreenClass({super.key});
@@ -21,11 +22,32 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   TextEditingController statusController = TextEditingController();
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
+
+  TextEditingController teacherDisplayController = TextEditingController();
+  TextEditingController courseDisplayController = TextEditingController();
   TextEditingController gradeDisplayController = TextEditingController();
+  TextEditingController dayDisplayController = TextEditingController();
 
   Map<String,dynamic>? savedSchedules;
 
-  Future<void> _saveSchedule() async {
+  Future<void> saveSchedule() async {
+    if(
+      teacherIdController.text.trim().isEmpty ||
+      courseIdController.text.trim().isEmpty ||
+      gradeIdController.text.trim().isEmpty ||
+      dayController.text.trim().isEmpty ||
+      startTimeController.text.trim().isEmpty ||
+      endTimeController.text.trim().isEmpty
+    ){
+      Notificaciones.mostrarMensaje(context, "Algunos campos aún están vacíos.", color: Colors.red);
+      return;
+    }
+
+    if (idToEdit != null) {
+      Notificaciones.mostrarMensaje(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      return;
+    }
+
     final url = Uri.parse('http://localhost:3000/api/schedule/register');
     final response = await http.post(
       url,
@@ -41,27 +63,106 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
     );
 
     if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
       setState(() {
-        getSchedules();
+        savedSchedules = data;
+        idController.text = data['id'].toString();
+        statusController.text = data['estado'].toString();
+        createdAtController.text = data['createdAt'].toString();
+        updatedAtController.text = data['updatedAt'].toString();
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Horario guardado correctamente')),
-      );
+      clearTextFields();
+      idToEdit = null;
+      getSchedules();
+      Notificaciones.mostrarMensaje(context, "Horario guardado correctamente", color: Colors.green);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al guardar el horario')),
-      );
+      Notificaciones.mostrarMensaje(context, "Error al guardar horario", color: Colors.red);
+      print("Error al guardar horario: ${response.body}");
     }
   }
 
-  List<dynamic> schedulesList = [];
+  void clearTextFields (){
+    idController.clear();
+    teacherIdController.clear();
+    courseIdController.clear();
+    gradeIdController.clear();
+    dayController.clear();
+    startTimeController.clear();
+    endTimeController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+    teacherDisplayController.clear();
+    courseIdController.clear();
+    gradeDisplayController.clear();
+    dayDisplayController.clear();
+  }
+
+  List<Map<String, dynamic>> schedulesList = [];
 
   Future<void> getSchedules() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/api/schedule/list'));
+    final url = Uri.parse('http://localhost:3000/api/schedule/list');
+    final response = await http.get(url);
     if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
       setState(() {
-        schedulesList = jsonDecode(response.body);
+        schedulesList = List<Map<String, dynamic>>.from(data);
       });
+    }
+  }
+
+  int? idToEdit;
+
+  Future<void> updateSchedule () async {
+    if (idToEdit == null) {
+      Notificaciones.mostrarMensaje(context, "Selecciona un horario para actualizar", color: Colors.red);
+      return;
+    }
+
+    final url = Uri.parse('http://localhost:3000/api/schedule/update/$idToEdit');
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "docente_id": int.parse(teacherIdController.text),
+        "curso_id": int.parse(courseIdController.text),
+        "grado_id": int.parse(gradeIdController.text),
+        "fecha": dayController.text,
+        "hora_inicio": startTimeController.text,
+        "hora_fin": endTimeController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      getSchedules();
+    } else {
+      print("Error al actualizar estudiante: ${response.body}");
+    }
+  }
+
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+    }
+  }
+
+  Future<void> deleteSchedule(int id) async {
+    final url = Uri.parse('http://localhost:3000/api/schedule/delete/$id');
+    final response = await http.delete(url);
+
+    if (response.statusCode == 200) {
+      print("Horario eliminado: $id");
+      getSchedules();
+    } else {
+      print("Error al eliminar horario: ${response.body}");
     }
   }
 
@@ -92,6 +193,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                     title: Text('${teacher['id']} - ${teacher['nombre']} ${teacher['apellido']}'),
                     onTap: () {
                       teacherIdController.text = teacher['id'].toString();
+                      teacherDisplayController.text = '${teacher['id']} - ${teacher['nombre']} ${teacher['apellido']}';
                       Navigator.of(context).pop();
                     },
                   ),
@@ -125,6 +227,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                     title: Text('${course['id']} - ${course['nombre']}'),
                     onTap: () {
                       courseIdController.text = course['id'].toString();
+                      courseDisplayController.text = '${course['id']} - ${course['nombre']}';
                       Navigator.of(context).pop();
                     },
                   ),
@@ -199,7 +302,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                         child: AbsorbPointer(
                           child: TextField(
                             decoration: const InputDecoration(hintText: "Seleccionar Docentes"),
-                            controller: teacherIdController,
+                            controller: teacherDisplayController,
                           ),
                         ),
                       ),
@@ -217,7 +320,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                         child: AbsorbPointer(
                           child: TextField(
                             decoration: const InputDecoration(hintText: "Seleccionar Cursos"),
-                            controller: courseIdController,
+                            controller: courseDisplayController,
                           ),
                         ),
                       ),
@@ -235,7 +338,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                         child: AbsorbPointer(
                           child: TextField(
                             decoration: const InputDecoration(hintText: "Seleccionar Grados"),
-                            controller: gradeIdController,
+                            controller: gradeDisplayController,
                           ),
                         ),
                       ),
@@ -303,7 +406,14 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                 const SizedBox(height: 10),
                 CommonTimestampsFields(createdAtController: createdAtController, updatedAtController: updatedAtController),
                 const SizedBox(height: 20),
-                ElevatedButton(onPressed: _saveSchedule, child: Text("Guardar")),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(onPressed: saveSchedule, child: const Text("Guardar")),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    ElevatedButton(onPressed: updateSchedule, child: const Text("Actualizar")),
+                  ],
+                ),
                 const SizedBox(height: 20),
                 const Text('Horarios Registrados', style: TextStyle(fontWeight: FontWeight.bold),),
                 const SizedBox(height: 20),
@@ -328,7 +438,26 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             IconButton(
-                              onPressed: (){},
+                              onPressed: () {
+                                setState(() {
+                                  idToEdit = schedule['id'];
+                                  idController.text = schedule['id'].toString();
+                                  teacherIdController.text = schedule['docente']['id'].toString();
+                                  teacherDisplayController.text = '${schedule['docente']['id']} - ${schedule['docente']['persona']['nombre']} ${schedule['docente']['persona']['apellido']}';
+                                  courseIdController.text = schedule['curso']['id'].toString();
+                                  courseDisplayController.text = '${schedule['curso']['id']} - ${schedule['curso']['nombre']}';
+                                  gradeIdController.text = schedule['grado']['id'].toString();
+                                  gradeDisplayController.text = '${schedule['grado']['id']} - ${schedule['grado']['nombre']}';
+                                  dayController.text = '${schedule['fecha']}';
+                                  statusController.text = schedule['estado'].toString();
+                                  createdAtController.text = schedule['createdAt'].toString();
+                                  updatedAtController.text = schedule['updatedAt'].toString();
+                                });
+                              },
+                              icon: const Icon(Icons.edit, color: Colors.blue,),
+                            ),
+                            IconButton(
+                              onPressed: () => deleteSchedule(schedule['id']),
                               icon: const Icon(Icons.delete, color: Colors.red,),
                             ),
                           ],

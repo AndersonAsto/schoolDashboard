@@ -16,7 +16,6 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
   TextEditingController statusController = TextEditingController();
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
-
   TextEditingController studentDisplayController = TextEditingController();
   TextEditingController gradeDisplayController = TextEditingController();
 
@@ -72,7 +71,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
     statusController.clear();
     createdAtController.clear();
     updatedAtController.clear();
-    studentIdController.clear();
+    studentDisplayController.clear();
     gradeDisplayController.clear();
   }
 
@@ -86,29 +85,6 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
       setState(() {
         studentsList = List<Map<String, dynamic>>.from(data);
       });
-    }
-  }
-
-
-
-  Future<void> cancelUpdate () async {
-    if (idToEdit != null) {
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-    }
-  }
-
-  Future<void> deleteStudent(int id) async {
-    final url = Uri.parse('http://localhost:3000/api/student/delete/$id');
-    final response = await http.delete(url);
-
-    if (response.statusCode == 200) {
-      print("Estudiante retirado: $id");
-      getStudents();
-    } else {
-      print("Error al retirar estudiante: ${response.body}");
     }
   }
 
@@ -142,6 +118,27 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
     }
   }
 
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+    }
+  }
+
+  Future<void> deleteStudent(int id) async {
+    final url = Uri.parse('http://localhost:3000/api/student/delete/$id');
+    final response = await http.delete(url);
+
+    if (response.statusCode == 200) {
+      print("Estudiante retirado: $id");
+      getStudents();
+    } else {
+      print("Error al retirar estudiante: ${response.body}");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -150,7 +147,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
 
   Future<void> showPersonSelection(BuildContext context) async {
     final response = await http.get(Uri.parse('http://localhost:3000/api/person/personavailable'));
-    final List<dynamic> personas = jsonDecode(response.body);
+    final List<dynamic> persons = jsonDecode(response.body);
 
     showDialog(
       context: context,
@@ -161,15 +158,15 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: personas.length,
+              itemCount: persons.length,
               itemBuilder: (context, index) {
-                final persona = personas[index];
+                final person = persons[index];
                 return Card(
                   child: ListTile(
-                    title: Text('${persona['id']} - ${persona['nombre']} ${persona['apellido']}'),
+                    title: Text('${person['id']} - ${person['nombre']} ${person['apellido']}'),
                     onTap: () {
-                      studentIdController.text = persona['id'].toString();
-                      studentDisplayController.text = '${persona['id']} - ${persona['nombre']} ${persona['apellido']}';
+                      studentIdController.text = person['id'].toString();
+                      studentDisplayController.text = '${person['id']} - ${person['nombre']} ${person['apellido']}';
                       Navigator.of(context).pop();
                     },
                   ),
