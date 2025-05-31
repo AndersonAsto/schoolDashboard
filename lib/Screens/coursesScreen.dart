@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:schooldashboard/Global/global.dart';
@@ -31,7 +32,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/course/register');
+    final url = Uri.parse('${generalURL}api/course/register');
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -68,7 +69,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
   List<Map<String,dynamic>> coursesList = [];
 
   Future<void> getCourses() async {
-    final url = Uri.parse('http://localhost:3000/api/course/list');
+    final url = Uri.parse('${generalURL}api/course/list');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -89,7 +90,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/course/update/$idToEdit');
+    final url = Uri.parse('${generalURL}api/course/update/$idToEdit');
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
@@ -118,7 +119,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
   }
 
   Future<void> deleteCourse(int id) async {
-    final url = Uri.parse('http://localhost:3000/api/course/delete/$id');
+    final url = Uri.parse('${generalURL}api/course/delete/$id');
     final response = await http.delete(url);
 
     if (response.statusCode == 200) {
@@ -138,7 +139,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black,),
+      appBar: AppBar(title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black, automaticallyImplyLeading: false,),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
         focusNode: FocusNode(),
@@ -152,7 +153,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
                 Row(
                   children: [
                     Expanded(
-                      child: CustomTextField(label: "Curso", controller: courseController)
+                      child: CustomTextField(label: "Curso", controller: courseController, inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]"))]),
                     ),
                   ],
                 ),

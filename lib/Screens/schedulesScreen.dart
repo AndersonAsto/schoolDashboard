@@ -48,7 +48,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/schedule/register');
+    final url = Uri.parse('${generalURL}api/schedule/register');
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -101,7 +101,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   List<Map<String, dynamic>> schedulesList = [];
 
   Future<void> getSchedules() async {
-    final url = Uri.parse('http://localhost:3000/api/schedule/list');
+    final url = Uri.parse('${generalURL}api/schedule/list');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -119,7 +119,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/schedule/update/$idToEdit');
+    final url = Uri.parse('${generalURL}api/schedule/update/$idToEdit');
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
@@ -155,7 +155,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   }
 
   Future<void> deleteSchedule(int id) async {
-    final url = Uri.parse('http://localhost:3000/api/schedule/delete/$id');
+    final url = Uri.parse('${generalURL}api/schedule/delete/$id');
     final response = await http.delete(url);
 
     if (response.statusCode == 200) {
@@ -173,7 +173,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   }
 
   Future<void> showTeacherSelection(BuildContext context) async {
-    final response = await http.get(Uri.parse('http://localhost:3000/api/user/teachers'));
+    final response = await http.get(Uri.parse('${generalURL}api/user/teachers'));
     final List<dynamic> teachers = jsonDecode(response.body);
 
     showDialog(
@@ -207,7 +207,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   }
 
   Future<void> showCourseSelection(BuildContext context) async {
-    final response = await http.get(Uri.parse('http://localhost:3000/api/course/list'));
+    final response = await http.get(Uri.parse('${generalURL}api/course/list'));
     final List<dynamic> courses = jsonDecode(response.body);
 
     showDialog(
@@ -281,7 +281,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Horarios", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black,),
+      appBar: AppBar(title: const Text("Registro de Horarios", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black, automaticallyImplyLeading: false,),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
         focusNode: FocusNode(),
@@ -294,7 +294,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Docente", controller: teacherIdController)),
+                    Expanded(child: CustomTextField(label: "Código de Docente", controller: teacherIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
@@ -312,7 +312,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Curso", controller: courseIdController)),
+                    Expanded(child: CustomTextField(label: "Código de Curso", controller: courseIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
@@ -330,7 +330,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController)),
+                    Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
@@ -348,7 +348,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Día", controller: dayController)),
+                    Expanded(child: CustomTextField(label: "Día", controller: dayController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
@@ -377,7 +377,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                             initialTime: TimeOfDay.now(),
                           );
                           if (picked != null) {
-                            final formatted = picked.format(context); // "8:00 AM"
+                            final formatted = picked.format(context);
                             final parsed = TimeOfDay(hour: picked.hour, minute: picked.minute);
                             startTimeController.text = _formatTime(parsed);
                           }
@@ -426,7 +426,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                     return ListTile(
                       title: Text('ID: ${schedule['id']}. ${schedule['fecha']} \n'
                           '${schedule['hora_inicio']} - ${schedule['hora_fin']}'),
-                      subtitle: Text('${schedule['docente']['id']}: (${schedule['docente']['rol'].toString().contains('docente') ? 'Docente' : 'Administrador'})  ${schedule['docente']['username']} \n'
+                      subtitle: Text('${schedule['docente']['id']}: (${schedule['docente']['rol']}) ${schedule['docente']['username']} \n'
                           '${schedule['docente']['persona']['nombre']} ${schedule['docente']['persona']['apellido']} \n'
                           'Curso: ${schedule['curso']['id']}. ${schedule['curso']['nombre']} \n'
                           'Grado: ${schedule['grado']['id']}. ${schedule['grado']['nombre']} \n'

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:schooldashboard/Global/global.dart';
 import 'package:schooldashboard/Utils/allNotifications.dart';
@@ -109,7 +110,7 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/person/update/$idToEdit');
+    final url = Uri.parse('${generalURL}api/person/update/$idToEdit');
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
@@ -167,6 +168,7 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
       appBar: AppBar(
         title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.black,
+        automaticallyImplyLeading: false,
       ),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
@@ -178,20 +180,43 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
               children: [
                 CommonInfoFields(idController: idController, statusController: statusController),
                 const SizedBox(height: 10),
-                CustomTextField(label: "Nombres", controller: nameController),
+                CustomTextField(label: "Nombres", controller: nameController, inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]"))]),
                 const SizedBox(height: 10),
-                CustomTextField(label: "Apellidos", controller: lastNameController),
+                CustomTextField(label: "Apellidos", controller: lastNameController, inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]"))]),
                 const SizedBox(height: 10),
-                CustomTextField(label: "Correo", controller: emailController),
+                CustomTextField(
+                  label: "Correo",
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z0-9@._-]")),
+                  ],
+                ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
-                      child: CustomTextField(label: "DNI", controller: dniController, keyboardType: TextInputType.number,)
+                      child: CustomTextField(
+                        label: "DNI",
+                        controller: dniController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(8),
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: CustomTextField(label: "Teléfono", controller: phoneController, keyboardType: TextInputType.number,)
+                      child: CustomTextField(
+                        label: "Teléfono",
+                        controller: phoneController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(9),
+                        ],
+                      ),
                     ),
                   ],
                 ),

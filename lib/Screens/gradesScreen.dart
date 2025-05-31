@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:schooldashboard/Global/global.dart';
 import 'package:schooldashboard/Utils/allNotifications.dart';
@@ -31,7 +32,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/grade/register');
+    final url = Uri.parse('${generalURL}api/grade/register');
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -68,7 +69,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
   List<Map<String, dynamic>> gradesList = [];
 
   Future<void> getGrades() async {
-    final url = Uri.parse('http://localhost:3000/api/grade/list');
+    final url = Uri.parse('${generalURL}api/grade/list');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -89,7 +90,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/grade/update/$idToEdit');
+    final url = Uri.parse('${generalURL}api/grade/update/$idToEdit');
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
@@ -118,7 +119,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
   }
 
   Future<void> deleteGrade(int id) async {
-    final url = Uri.parse('http://localhost:3000/api/grade/delete/$id');
+    final url = Uri.parse('${generalURL}api/grade/delete/$id');
     final response = await http.delete(url);
 
     if (response.statusCode == 200) {
@@ -138,7 +139,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),), backgroundColor: Colors.black,),
+      appBar: AppBar(title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),), backgroundColor: Colors.black, automaticallyImplyLeading: false,),
       body: SelectableRegion(
         focusNode: FocusNode(),
         selectionControls: materialTextSelectionControls,
@@ -152,7 +153,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
                 Row(
                   children: [
                     Expanded(
-                      child: CustomTextField(label: "Grado", controller: gradeController)
+                      child: CustomTextField(label: "Grado", controller: gradeController, inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]"))])
                     ),
                   ],
                 ),

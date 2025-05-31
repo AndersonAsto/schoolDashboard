@@ -40,7 +40,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/user/register');
+    final url = Uri.parse('${generalURL}api/user/register');
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -86,7 +86,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
   List<Map<String, dynamic>> usersList = [];
 
   Future<void> getUsers() async {
-    final url = Uri.parse('http://localhost:3000/api/user/list');
+    final url = Uri.parse('${generalURL}api/user/list');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -109,7 +109,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/user/update/$idToEdit');
+    final url = Uri.parse('${generalURL}api/user/update/$idToEdit');
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
@@ -143,7 +143,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
   }
 
   Future<void> deleteUser(int id) async {
-    final url = Uri.parse('http://localhost:3000/api/user/delete/$id');
+    final url = Uri.parse('${generalURL}api/user/delete/$id');
     final response = await http.delete(url);
 
     if (response.statusCode == 200) {
@@ -161,7 +161,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
   }
 
   Future<void> showPersonSelection(BuildContext context) async {
-    final response = await http.get(Uri.parse('http://localhost:3000/api/person/personavailablestudent'));
+    final response = await http.get(Uri.parse('${generalURL}api/person/personavailablestudent'));
     final List<dynamic> persons = jsonDecode(response.body);
 
     showDialog(
@@ -229,7 +229,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Usuarios", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black,),
+      appBar: AppBar(title: const Text("Registro de Usuarios", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black, automaticallyImplyLeading: false,),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
         focusNode: FocusNode(),
@@ -278,7 +278,6 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                               });
                             },
                           ),
-                          enabled: false,
                           border: const OutlineInputBorder(),
                         ),
                       ),

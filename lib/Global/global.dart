@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-String generalURL = 'http://localhost:3000/';
+String generalURL = 'https://apischool-jk0s.onrender.com/';
 
 Future<void> showGradeSelection(BuildContext context, TextEditingController controller1, TextEditingController controller2) async {
-  final response = await http.get(Uri.parse('http://localhost:3000/api/grade/list'));
+  final response = await http.get(Uri.parse('${generalURL}api/grade/list'));
   if (response.statusCode == 200) {
     final List<dynamic> grades = jsonDecode(response.body);
 
@@ -139,6 +140,7 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final bool enabled;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextField({
     Key? key,
@@ -146,6 +148,7 @@ class CustomTextField extends StatelessWidget {
     required this.controller,
     this.enabled = true,
     this.keyboardType,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
@@ -159,6 +162,7 @@ class CustomTextField extends StatelessWidget {
       controller: controller,
       enabled: enabled,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
     );
   }
 }

@@ -35,7 +35,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/student/register');
+    final url = Uri.parse('${generalURL}api/student/register');
     final response = await http.post(
       url,
       headers: {"Content-Type": "application/json"},
@@ -78,7 +78,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
   List<Map<String, dynamic>> studentsList = [];
 
   Future<void> getStudents() async {
-    final url = Uri.parse('http://localhost:3000/api/student/list');
+    final url = Uri.parse('${generalURL}api/student/list');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -96,7 +96,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
       return;
     }
 
-    final url = Uri.parse('http://localhost:3000/api/student/update/$idToEdit');
+    final url = Uri.parse('${generalURL}api/student/update/$idToEdit');
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
@@ -128,7 +128,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
   }
 
   Future<void> deleteStudent(int id) async {
-    final url = Uri.parse('http://localhost:3000/api/student/delete/$id');
+    final url = Uri.parse('${generalURL}api/student/delete/$id');
     final response = await http.delete(url);
 
     if (response.statusCode == 200) {
@@ -146,7 +146,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
   }
 
   Future<void> showPersonSelection(BuildContext context) async {
-    final response = await http.get(Uri.parse('http://localhost:3000/api/person/personavailable'));
+    final response = await http.get(Uri.parse('${generalURL}api/person/personavailable'));
     final List<dynamic> persons = jsonDecode(response.body);
 
     showDialog(
@@ -182,7 +182,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Estudiantes", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black,),
+      appBar: AppBar(title: const Text("Registro de Estudiantes", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black, automaticallyImplyLeading: false,),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
         focusNode: FocusNode(),
@@ -195,7 +195,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Persona", controller: studentIdController),),
+                    Expanded(child: CustomTextField(label: "Código de Persona", controller: studentIdController, enabled: false,),),
                     const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
@@ -213,7 +213,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController),),
+                    Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController, enabled: false,),),
                     const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
