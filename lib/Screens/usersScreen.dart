@@ -245,15 +245,19 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                     Expanded(child: CustomTextField(label: "Código de Persona", controller: personIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => showPersonSelection(context),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            decoration: const InputDecoration(hintText: "Seleccionar Persona"),
-                            controller: personDisplayController,
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () => showPersonSelection(context),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: TextStyle(fontSize: 13),
+                              decoration: const InputDecoration(hintText: "Seleccionar Persona", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                              controller: personDisplayController,
+                            ),
                           ),
                         ),
-                      ),
+                      )
                     )
                   ],
                 ),
@@ -265,22 +269,27 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: TextField(
-                        controller: passwordController,
-                        obscureText: !_showPassword,
-                        decoration: InputDecoration(
-                          labelText: "Contraseña",
-                          suffixIcon: IconButton(
-                            icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off),
-                            onPressed: () {
-                              setState(() {
-                                _showPassword = !_showPassword;
-                              });
-                            },
+                      child: SizedBox(
+                        height: 36,
+                        child: TextField(
+                          controller: passwordController,
+                          obscureText: !_showPassword,
+                          style: TextStyle(fontSize: 13),
+                          decoration: InputDecoration(
+                            labelText: "Contraseña",
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                            suffixIcon: IconButton(
+                              icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off),
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
+                            ),
+                            border: const OutlineInputBorder(),
                           ),
-                          border: const OutlineInputBorder(),
                         ),
-                      ),
+                      )
                     ),
                   ],
                 ),
@@ -292,15 +301,19 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => showRoleSelection(context),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            decoration: const InputDecoration(hintText: "Seleccionar Rol"),
-                            controller: roleController,
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () => showRoleSelection(context),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: TextStyle(fontSize: 13),
+                              decoration: const InputDecoration(hintText: "Seleccionar Rol", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                              controller: roleController,
+                            ),
                           ),
                         ),
-                      ),
+                      )
                     )
                   ],
                 ),

@@ -297,15 +297,19 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                     Expanded(child: CustomTextField(label: "Código de Docente", controller: teacherIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => showTeacherSelection(context),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            decoration: const InputDecoration(hintText: "Seleccionar Docentes"),
-                            controller: teacherDisplayController,
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () => showTeacherSelection(context),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: TextStyle(fontSize: 13),
+                              decoration: const InputDecoration(hintText: "Seleccionar Docentes", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                              controller: teacherDisplayController,
+                            ),
                           ),
                         ),
-                      ),
+                      )
                     ),
                   ],
                 ),
@@ -315,15 +319,19 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                     Expanded(child: CustomTextField(label: "Código de Curso", controller: courseIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => showCourseSelection(context),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            decoration: const InputDecoration(hintText: "Seleccionar Cursos"),
-                            controller: courseDisplayController,
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () => showCourseSelection(context),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: TextStyle(fontSize: 13),
+                              decoration: const InputDecoration(hintText: "Seleccionar Cursos", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                              controller: courseDisplayController,
+                            ),
                           ),
                         ),
-                      ),
+                      )
                     ),
                   ],
                 ),
@@ -333,15 +341,19 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                     Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () async => await showGradeSelection(context, gradeIdController, gradeDisplayController),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            decoration: const InputDecoration(hintText: "Seleccionar Grados"),
-                            controller: gradeDisplayController,
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () async => await showGradeSelection(context, gradeIdController, gradeDisplayController),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: TextStyle(fontSize: 13),
+                              decoration: const InputDecoration(hintText: "Seleccionar Grados", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                              controller: gradeDisplayController,
+                            ),
                           ),
                         ),
-                      ),
+                      )
                     ),
                   ],
                 ),
@@ -351,15 +363,19 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                     Expanded(child: CustomTextField(label: "Día", controller: dayController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => showDaySelection(context),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            decoration: const InputDecoration(hintText: "Seleccionar Días"),
-                            controller: dayController,
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () => showDaySelection(context),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: TextStyle(fontSize: 13),
+                              decoration: const InputDecoration(hintText: "Seleccionar Días", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                              controller: dayController,
+                            ),
                           ),
                         ),
-                      ),
+                      )
                     ),
                   ],
                 ),
@@ -367,39 +383,47 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: startTimeController,
-                        readOnly: true,
-                        decoration: const InputDecoration(hintText: "Hora de Inicio"),
-                        onTap: () async {
-                          TimeOfDay? picked = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.now(),
-                          );
-                          if (picked != null) {
-                            final formatted = picked.format(context);
-                            final parsed = TimeOfDay(hour: picked.hour, minute: picked.minute);
-                            startTimeController.text = _formatTime(parsed);
-                          }
-                        },
-                      ),
+                      child: SizedBox(
+                        height: 36,
+                        child: TextField(
+                          controller: startTimeController,
+                          readOnly: true,
+                          decoration: const InputDecoration(hintText: "Hora de Inicio", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                          style: TextStyle(fontSize: 13),
+                          onTap: () async {
+                            TimeOfDay? picked = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
+                            if (picked != null) {
+                              final formatted = picked.format(context);
+                              final parsed = TimeOfDay(hour: picked.hour, minute: picked.minute);
+                              startTimeController.text = _formatTime(parsed);
+                            }
+                          },
+                        ),
+                      )
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: TextField(
-                        controller: endTimeController,
-                        readOnly: true,
-                        decoration: const InputDecoration(hintText: "Hora de Finalización"),
-                        onTap: () async {
-                          TimeOfDay? picked = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.now(),
-                          );
-                          if (picked != null) {
-                            endTimeController.text = _formatTime(picked);
-                          }
-                        },
-                      ),
+                      child: SizedBox(
+                        height: 36,
+                        child: TextField(
+                          controller: endTimeController,
+                          style: TextStyle(fontSize: 13),
+                          readOnly: true,
+                          decoration: const InputDecoration(hintText: "Hora de Finalización", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                          onTap: () async {
+                            TimeOfDay? picked = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
+                            if (picked != null) {
+                              endTimeController.text = _formatTime(picked);
+                            }
+                          },
+                        ),
+                      )
                     )
                   ],
                 ),

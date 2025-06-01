@@ -198,12 +198,16 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
                     Expanded(child: CustomTextField(label: "Código de Persona", controller: studentIdController, enabled: false,),),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => showPersonSelection(context),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            decoration: const InputDecoration(hintText: "Seleccionar Persona"),
-                            controller: studentDisplayController,
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () => showPersonSelection(context),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: TextStyle(fontSize: 13),
+                              decoration: const InputDecoration(hintText: "Seleccionar Persona", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                              controller: studentDisplayController,
+                            ),
                           ),
                         ),
                       ),
@@ -216,15 +220,19 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
                     Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController, enabled: false,),),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () async => await showGradeSelection(context, gradeIdController, gradeDisplayController),
-                        child: AbsorbPointer(
-                          child: TextField(
-                            decoration: const InputDecoration(hintText: "Seleccionar Grados"),
-                            controller: gradeDisplayController,
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () async => await showGradeSelection(context, gradeIdController, gradeDisplayController),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: TextStyle(fontSize: 13),
+                              decoration: const InputDecoration(hintText: "Seleccionar Grados", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),),
+                              controller: gradeDisplayController,
+                            ),
                           ),
                         ),
-                      ),
+                      )
                     ),
                   ],
                 ),

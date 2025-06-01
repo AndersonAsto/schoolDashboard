@@ -33,28 +33,33 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
     }
 
     final url = Uri.parse('${generalURL}api/grade/register');
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"nombre": gradeController.text}),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"nombre": gradeController.text}),
+      );
 
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        savedGrades = data;
-        idController.text = data['id'].toString();
-        statusController.text = data['estado'].toString();
-        createdAtController.text = data['createdAt'].toString();
-        updatedAtController.text = data['updatedAt'].toString();
-      });
-      clearTextFields();
-      idToEdit = null;
-      getGrades();
-      Notificaciones.mostrarMensaje(context, "Grado guardado correctamente", color: Colors.green);
-    } else {
-      Notificaciones.mostrarMensaje(context, "Error al guardar grado", color: Colors.red);
-      print("Error al guardar grado: ${response.body}");
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          savedGrades = data;
+          idController.text = data['id'].toString();
+          statusController.text = data['estado'].toString();
+          createdAtController.text = data['createdAt'].toString();
+          updatedAtController.text = data['updatedAt'].toString();
+        });
+        clearTextFields();
+        idToEdit = null;
+        await getGrades(); // Await to ensure grades are reloaded before notification
+        Notificaciones.mostrarMensaje(context, "Grado guardado correctamente", color: Colors.green);
+      } else {
+        Notificaciones.mostrarMensaje(context, "Error al guardar grado", color: Colors.red);
+        print("Error al guardar grado: ${response.body}");
+      }
+    } catch (e) {
+      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      print("Error de conexión al guardar grado: $e");
     }
   }
 
@@ -70,15 +75,27 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
 
   Future<void> getGrades() async {
     final url = Uri.parse('${generalURL}api/grade/list');
-    final response = await http.get(url);
+    try {
+      final response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        gradesList = List<Map<String, dynamic>>.from(data);
-      });
-    } else {
-      print("Error al obtener grados: ${response.body}");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          gradesList = List<Map<String, dynamic>>.from(data);
+          // Update the DataTableSource with the new data
+          _gradesDataSource = _GradesDataSource(
+            gradesList: gradesList,
+            onEdit: _handleEditGrade,
+            onDelete: deleteGrade,
+          );
+        });
+      } else {
+        Notificaciones.mostrarMensaje(context, "Error al obtener grados", color: Colors.red);
+        print("Error al obtener grados: ${response.body}");
+      }
+    } catch (e) {
+      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      print("Error de conexión al obtener grados: $e");
     }
   }
 
@@ -89,23 +106,34 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
       Notificaciones.mostrarMensaje(context, "Selecciona un grado para actualizar", color: Colors.red);
       return;
     }
+    if (gradeController.text.trim().isEmpty) {
+      Notificaciones.mostrarMensaje(context, "El nombre del grado no puede estar vacío.", color: Colors.red);
+      return;
+    }
 
     final url = Uri.parse('${generalURL}api/grade/update/$idToEdit');
-    final response = await http.put(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"nombre": gradeController.text}),
-    );
+    try {
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"nombre": gradeController.text}),
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-      getGrades();
-    } else {
-      print("Error al actualizar grado: ${response.body}");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body); // You might not need to use 'data' here if the API just confirms success
+        setState(() {
+          clearTextFields();
+          idToEdit = null;
+        });
+        await getGrades();
+        Notificaciones.mostrarMensaje(context, "Grado actualizado correctamente", color: Colors.green);
+      } else {
+        Notificaciones.mostrarMensaje(context, "Error al actualizar grado", color: Colors.red);
+        print("Error al actualizar grado: ${response.body}");
+      }
+    } catch (e) {
+      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      print("Error de conexión al actualizar grado: $e");
     }
   }
 
@@ -120,20 +148,45 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
 
   Future<void> deleteGrade(int id) async {
     final url = Uri.parse('${generalURL}api/grade/delete/$id');
-    final response = await http.delete(url);
+    try {
+      final response = await http.delete(url);
 
-    if (response.statusCode == 200) {
-      print("Grado eliminado: $id");
-      getGrades();
-    } else {
-      print("Error al eliminar grado: ${response.body}");
+      if (response.statusCode == 200) {
+        print("Grado eliminado: $id");
+        await getGrades();
+        Notificaciones.mostrarMensaje(context, "Grado eliminado correctamente", color: Colors.green);
+      } else {
+        Notificaciones.mostrarMensaje(context, "Error al eliminar grado", color: Colors.red);
+        print("Error al eliminar grado: ${response.body}");
+      }
+    } catch (e) {
+      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      print("Error de conexión al eliminar grado: $e");
     }
   }
+
+  late _GradesDataSource _gradesDataSource;
 
   @override
   void initState() {
     super.initState();
     getGrades();
+    _gradesDataSource = _GradesDataSource(
+      gradesList: gradesList,
+      onEdit: _handleEditGrade,
+      onDelete: deleteGrade,
+    );
+  }
+
+  void _handleEditGrade(Map<String, dynamic> grade) {
+    setState(() {
+      idToEdit = grade['id'];
+      idController.text = grade['id'].toString();
+      gradeController.text = grade['nombre'];
+      statusController.text = grade['estado'].toString();
+      createdAtController.text = grade['createdAt'].toString();
+      updatedAtController.text = grade['updatedAt'].toString();
+    });
   }
 
   @override
@@ -171,40 +224,30 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
                 const SizedBox(height: 20),
                 const Text("Grados Registrados", style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: gradesList.length,
-                  itemBuilder: (context, index) {
-                    final grade = gradesList[index];
-                    return ListTile(
-                      title: Text("ID: ${grade['id']} - ${grade['nombre']}"),
-                      subtitle: Text("Estado: ${grade['estado'] == true ? 'Activo' : 'Inactivo'} | Creado: ${grade['createdAt']}"),
-                      trailing: SizedBox(
-                        width: 80,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  idToEdit = grade['id'];
-                                  idController.text = grade['id'].toString();
-                                  gradeController.text = grade['nombre'];
-                                  statusController.text = grade['estado'].toString();
-                                  createdAtController.text = grade['createdAt'].toString();
-                                  updatedAtController.text = grade['updatedAt'].toString();
-                                });
-                              },
-                              icon: const Icon(Icons.edit, color: Colors.blue,),
-                            ),
-                            IconButton(onPressed: () => deleteGrade(grade['id']), icon: const Icon(Icons.delete, color: Colors.red,),),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+
+                SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+                    child: PaginatedDataTable(
+                      columns: const [
+                        DataColumn(label: Text('ID')),
+                        DataColumn(label: Text('Grado')),
+                        DataColumn(label: Text('Estado')),
+                        DataColumn(label: Text('Creado')),
+                        DataColumn(label: Text('Actualizado')),
+                        DataColumn(label: Text('Acciones')),
+                      ],
+                      source: _gradesDataSource, // Our custom data source
+                      rowsPerPage: 10, // Set 15 rows per page
+                      onPageChanged: (int page) {
+                        // Optional: You can add logic here if you need to do something when the page changes
+                        print('Page changed to: $page');
+                      },
+                      // Optional: Adjust available rows per page options
+                      availableRowsPerPage: const [5, 10, 15, 20, 50],
+                      showCheckboxColumn: false, // Hide checkboxes if not needed
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -213,4 +256,54 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
       ),
     );
   }
+}
+
+class _GradesDataSource extends DataTableSource {
+  final List<Map<String, dynamic>> gradesList;
+  final Function(Map<String, dynamic>) onEdit;
+  final Function(int) onDelete;
+
+  _GradesDataSource({
+    required this.gradesList,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  DataRow? getRow(int index) {
+    if (index >= gradesList.length) {
+      return null;
+    }
+    final grade = gradesList[index];
+    return DataRow(
+      cells: [
+        DataCell(Text(grade['id'].toString())),
+        DataCell(Text(grade['nombre'])),
+        DataCell(Text(grade['estado'] == true ? 'Activo' : 'Inactivo')),
+        DataCell(Text(grade['createdAt'].toString())),
+        DataCell(Text(grade['updatedAt'].toString())),
+        DataCell(Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.blue),
+              onPressed: () => onEdit(grade), // Call the onEdit callback
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => onDelete(grade['id']), // Call the onDelete callback
+            ),
+          ],
+        )),
+      ],
+    );
+  }
+
+  @override
+  bool get isRowCountApproximate => false; // We know the exact row count
+
+  @override
+  int get rowCount => gradesList.length; // Total number of rows
+
+  @override
+  int get selectedRowCount => 0; // No rows are selected by default
 }

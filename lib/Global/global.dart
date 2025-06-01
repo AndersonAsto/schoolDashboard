@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-String generalURL = 'https://apischool-jk0s.onrender.com/';
+import 'package:schooldashboard/Utils/allNotifications.dart';
+
+String generalURL = 'http://localhost:3000/';
 
 Future<void> showGradeSelection(BuildContext context, TextEditingController controller1, TextEditingController controller2) async {
   final response = await http.get(Uri.parse('${generalURL}api/grade/list'));
@@ -39,9 +41,7 @@ Future<void> showGradeSelection(BuildContext context, TextEditingController cont
       },
     );
   } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error al obtener los grados')),
-    );
+    Notificaciones.mostrarMensaje(context, "Error al obtener los grados", color: Colors.red);
   }
 }
 
@@ -60,28 +60,38 @@ class CommonInfoFields extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: "Código",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            height: 36,
+            child: TextField(
+              controller: idController,
+              enabled: false,
+              style: TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                labelText: "Código",
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
-            controller: idController,
-            enabled: false,
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: "Estado",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            height: 36,
+            child: TextField(
+              controller: statusController,
+              enabled: false,
+              style: TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                labelText: "Estado",
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
-            controller: statusController,
-            enabled: false,
           ),
         ),
       ],
@@ -104,30 +114,40 @@ class CommonTimestampsFields extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child:  TextField(
-            decoration:
-            InputDecoration(
-              hintText: "Creado el...",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            controller: createdAtController,
-            enabled: false,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: TextField(
-            decoration:
+          child: SizedBox(
+            height: 36,
+            child: TextField(
+              decoration:
               InputDecoration(
-                hintText: "Actualizado el...",
+                labelText: "Creado el...",
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-            controller: updatedAtController,
-            enabled: false,
+              controller: createdAtController,
+              style: TextStyle(fontSize: 13),
+              enabled: false,
+            ),
+          )
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: SizedBox(
+            height: 36,
+            child: TextField(
+              decoration:
+              InputDecoration(
+                labelText: "Actualizado el...",
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              controller: updatedAtController,
+              style: TextStyle(fontSize: 13),
+              enabled: false,
+            ),
           ),
         ),
       ],
@@ -153,16 +173,20 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+    return SizedBox(
+      height: 36,
+      child: TextField(
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        ),
+        style: TextStyle(fontSize: 13),
+        controller: controller,
+        enabled: enabled,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
       ),
-      controller: controller,
-      enabled: enabled,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
     );
   }
 }

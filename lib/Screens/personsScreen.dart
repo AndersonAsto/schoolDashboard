@@ -27,11 +27,11 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
 
   Future<void> savePerson() async {
     if (
-      nameController.text.trim().isEmpty ||
-      lastNameController.text.trim().isEmpty ||
-      dniController.text.trim().isEmpty ||
-      emailController.text.trim().isEmpty ||
-      phoneController.text.trim().isEmpty
+    nameController.text.trim().isEmpty ||
+        lastNameController.text.trim().isEmpty ||
+        dniController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty ||
+        phoneController.text.trim().isEmpty
     ){
       Notificaciones.mostrarMensaje(context, "Algunos de los campos aún están vacíos.", color: Colors.red);
       return;
@@ -43,34 +43,39 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
     }
 
     final url = Uri.parse('${generalURL}api/person/register');
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "nombre": nameController.text,
-        "apellido": lastNameController.text,
-        "dni": dniController.text,
-        "correo": emailController.text,
-        "telefono": phoneController.text
-      }),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "nombre": nameController.text,
+          "apellido": lastNameController.text,
+          "dni": dniController.text,
+          "correo": emailController.text,
+          "telefono": phoneController.text
+        }),
+      );
 
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        savedPersons = data;
-        idController.text = data['id'].toString();
-        statusController.text = data['estado'].toString();
-        createdAtController.text = data['createdAt'].toString();
-        updatedAtController.text = data['updatedAt'].toString();
-      });
-      clearTextFields();
-      idToEdit = null;
-      getPersons();
-      Notificaciones.mostrarMensaje(context, "Persona guardada correctamente", color: Colors.green);
-    } else {
-      Notificaciones.mostrarMensaje(context, "Error al guardar persona", color: Colors.red);
-      print("Error al guardar grado: ${response.body}");
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          savedPersons = data;
+          idController.text = data['id'].toString();
+          statusController.text = data['estado'].toString();
+          createdAtController.text = data['createdAt'].toString();
+          updatedAtController.text = data['updatedAt'].toString();
+        });
+        clearTextFields();
+        idToEdit = null;
+        await getPersons(); // Await to ensure persons are reloaded before notification
+        Notificaciones.mostrarMensaje(context, "Persona guardada correctamente", color: Colors.green);
+      } else {
+        Notificaciones.mostrarMensaje(context, "Error al guardar persona", color: Colors.red);
+        print("Error al guardar persona: ${response.body}");
+      }
+    } catch (e) {
+      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      print("Error de conexión al guardar persona: $e");
     }
   }
 
@@ -90,15 +95,27 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
 
   Future<void> getPersons() async {
     final url = Uri.parse('${generalURL}api/person/list');
-    final response = await http.get(url);
+    try {
+      final response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        personsList = List<Map<String, dynamic>>.from(data);
-      });
-    } else {
-      print("Error al obtener datos de personas: ${response.body}");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          personsList = List<Map<String, dynamic>>.from(data);
+          // Update the DataTableSource with the new data
+          _personsDataSource = _PersonsDataSource(
+            personsList: personsList,
+            onEdit: _handleEditPerson,
+            onDelete: deletePerson,
+          );
+        });
+      } else {
+        Notificaciones.mostrarMensaje(context, "Error al obtener datos de personas", color: Colors.red);
+        print("Error al obtener datos de personas: ${response.body}");
+      }
+    } catch (e) {
+      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      print("Error de conexión al obtener datos de personas: $e");
     }
   }
 
@@ -106,32 +123,49 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
 
   Future<void> updatePerson () async {
     if (idToEdit == null) {
-      Notificaciones.mostrarMensaje(context, "Selecciona un curso para actualizar", color: Colors.red);
+      Notificaciones.mostrarMensaje(context, "Selecciona una persona para actualizar", color: Colors.red);
+      return;
+    }
+    if (
+    nameController.text.trim().isEmpty ||
+        lastNameController.text.trim().isEmpty ||
+        dniController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty ||
+        phoneController.text.trim().isEmpty
+    ){
+      Notificaciones.mostrarMensaje(context, "Algunos de los campos aún están vacíos.", color: Colors.red);
       return;
     }
 
     final url = Uri.parse('${generalURL}api/person/update/$idToEdit');
-    final response = await http.put(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "nombre": nameController.text,
-        "apellido": lastNameController.text,
-        "dni": dniController.text,
-        "correo": emailController.text,
-        "telefono": phoneController.text
-      }),
-    );
+    try {
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "nombre": nameController.text,
+          "apellido": lastNameController.text,
+          "dni": dniController.text,
+          "correo": emailController.text,
+          "telefono": phoneController.text
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-      getPersons();
-    } else {
-      print("Error al actualizar persona: ${response.body}");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body); // You might not need to use 'data' here if the API just confirms success
+        setState(() {
+          clearTextFields();
+          idToEdit = null;
+        });
+        await getPersons();
+        Notificaciones.mostrarMensaje(context, "Persona actualizada correctamente", color: Colors.green);
+      } else {
+        Notificaciones.mostrarMensaje(context, "Error al actualizar persona", color: Colors.red);
+        print("Error al actualizar persona: ${response.body}");
+      }
+    } catch (e) {
+      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      print("Error de conexión al actualizar persona: $e");
     }
   }
 
@@ -146,13 +180,20 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
 
   Future<void> deletePerson(int id) async {
     final url = Uri.parse('${generalURL}api/person/delete/$id');
-    final response = await http.delete(url);
+    try {
+      final response = await http.delete(url);
 
-    if (response.statusCode == 200) {
-      print("Persona removida: $id");
-      getPersons();
-    } else {
-      print("Error al remover persona: ${response.body}");
+      if (response.statusCode == 200) {
+        print("Persona removida: $id");
+        await getPersons();
+        Notificaciones.mostrarMensaje(context, "Persona eliminada correctamente", color: Colors.green);
+      } else {
+        Notificaciones.mostrarMensaje(context, "Error al remover persona", color: Colors.red);
+        print("Error al remover persona: ${response.body}");
+      }
+    } catch (e) {
+      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      print("Error de conexión al remover persona: $e");
     }
   }
 
@@ -160,6 +201,28 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
   void initState() {
     super.initState();
     getPersons();
+    _personsDataSource = _PersonsDataSource(
+      personsList: personsList,
+      onEdit: _handleEditPerson,
+      onDelete: deletePerson,
+    );
+  }
+
+  late _PersonsDataSource _personsDataSource;
+
+  void _handleEditPerson(Map<String, dynamic> person) {
+    setState(() {
+      idToEdit = person['id'];
+      idController.text = person['id'].toString();
+      nameController.text = person['nombre'];
+      lastNameController.text = person['apellido'];
+      dniController.text = person['dni'];
+      emailController.text = person['correo'];
+      phoneController.text = person['telefono'];
+      statusController.text = person['estado'].toString();
+      createdAtController.text = person['createdAt'].toString();
+      updatedAtController.text = person['updatedAt'].toString();
+    });
   }
 
   @override
@@ -234,52 +297,31 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
                 const SizedBox(height: 20),
                 const Text("Personas Registradas", style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: personsList.length,
-                  itemBuilder: (context, index) {
-                    final person = personsList[index];
-                    return ListTile(
-                      title: Text("ID: ${person['id']} - ${person['nombre']}"),
-                      subtitle: Text(
-                        "Nombres y Apellidos: ${person['nombre']} ${person['apellido']}\n"
-                        "DNI: ${person['dni']}\n"
-                        "Correo: ${person['correo']} | Teléfono: ${person['telefono']}\n"
-                        "Estado: ${person['estado'] == true ? 'Activo' : 'Inactivo'} | Creado: ${person['createdAt']}"
-                      ),
-                      trailing: Container(
-                        width: 80,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  idToEdit = person['id'];
-                                  idController.text = person['id'].toString();
-                                  nameController.text = person['nombre'];
-                                  lastNameController.text = person['apellido'];
-                                  dniController.text = person['dni'];
-                                  emailController.text = person['correo'];
-                                  phoneController.text = person['telefono'];
-                                  statusController.text = person['estado'].toString();
-                                  createdAtController.text = person['createdAt'].toString();
-                                  updatedAtController.text = person['updatedAt'].toString();
-                                });
-                              },
-                              icon: const Icon(Icons.edit, color: Colors.blue,),
-                            ),
-                            IconButton(
-                              onPressed: () => deletePerson(person['id']),
-                              icon: const Icon(Icons.delete, color: Colors.red,),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
+                    child: PaginatedDataTable(
+                      columns: const [
+                        DataColumn(label: Text('ID')),
+                        DataColumn(label: Text('Nombres y Apellidos')),
+                        DataColumn(label: Text('DNI')),
+                        DataColumn(label: Text('Teléfono')),
+                        DataColumn(label: Text('Correo')),
+                        DataColumn(label: Text('Estado')),
+                        DataColumn(label: Text('Creado')),
+                        DataColumn(label: Text('Acciones')),
+                      ],
+                      source: _personsDataSource, // Our custom data source
+                      rowsPerPage: 10, // Set 15 rows per page
+                      onPageChanged: (int page) {
+                        // Optional: You can add logic here if you need to do something when the page changes
+                        print('Page changed to: $page');
+                      },
+                      // Optional: Adjust available rows per page options
+                      availableRowsPerPage: const [5, 10, 15, 20, 50],
+                      showCheckboxColumn: false, // Hide checkboxes if not needed
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -288,4 +330,55 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
       ),
     );
   }
+}
+
+class _PersonsDataSource extends DataTableSource {
+  final List<Map<String, dynamic>> personsList;
+  final Function(Map<String, dynamic>) onEdit;
+  final Function(int) onDelete;
+
+  _PersonsDataSource({
+    required this.personsList,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  DataRow? getRow(int index) {
+    if (index >= personsList.length) {
+      return null;
+    }
+    final person = personsList[index];
+    return DataRow(
+      cells: [
+        DataCell(Text(person['id'].toString())),
+        DataCell(Text('${person['nombre']} ${person['apellido']}')),
+        DataCell(Text('${person['dni']}')),
+        DataCell(Text('${person['telefono']}')),
+        DataCell(Text('${person['correo']}')),
+        DataCell(Text(person['estado'] == true ? 'Activo' : 'Inactivo')),
+        DataCell(Text(person['createdAt'].toString())),
+        DataCell(Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.blue),
+              onPressed: () => onEdit(person), // Call the onEdit callback
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => onDelete(person['id']), // Call the onDelete callback
+            ),
+          ],
+        )),
+      ],
+    );
+  }
+  @override
+  bool get isRowCountApproximate => false; // We know the exact row count
+
+  @override
+  int get rowCount => personsList.length; // Total number of rows
+
+  @override
+  int get selectedRowCount => 0;
 }
