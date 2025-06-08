@@ -3,7 +3,9 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:schooldashboard/Global/global.dart';
 import 'package:schooldashboard/Navigation/adminNavigationRail.dart';
+import 'package:schooldashboard/Navigation/teacherNavigationRail.dart';
 import 'package:http/http.dart' as http;
+import 'package:schooldashboard/Utils/customTextFields.dart';
 
 class PrincipalLogInScreen extends StatefulWidget {
   const PrincipalLogInScreen({super.key});
@@ -63,6 +65,11 @@ class _PrincipalLogInScreenState extends State<PrincipalLogInScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AdminNavigationRail()),
+          );
+        } else if (rol == 'Docente'){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TeacherNavigationRail()),
           );
         } else {
           showMessage(context, 'Rol válido pero aún no implementado');

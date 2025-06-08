@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:schooldashboard/Global/global.dart';
-import 'package:schooldashboard/Utils/allNotifications.dart';
+import 'package:schooldashboard/Utils/customNotifications.dart';
+import 'package:schooldashboard/Utils/customTextFields.dart';
 
 class CoursesScreenClass extends StatefulWidget {
   const CoursesScreenClass({super.key});
@@ -19,7 +20,12 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
 
+  TextEditingController searchController = TextEditingController();
+  List<Map<String, dynamic>> filteredCoursesList = [];
+  List<Map<String,dynamic>> coursesList = [];
   Map<String, dynamic>? savedCourses;
+  int? idToEdit;
+  late _CoursesDataSource _coursesDataSource;
 
   Future<void> saveCourse() async {
     if(courseController.text.trim().isEmpty){
@@ -69,9 +75,8 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
     statusController.clear();
     createdAtController.clear();
     updatedAtController.clear();
+    filterCourses("");
   }
-
-  List<Map<String,dynamic>> coursesList = [];
 
   Future<void> getCourses() async {
     final url = Uri.parse('${generalURL}api/course/list');
@@ -82,13 +87,13 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
         final data = jsonDecode(response.body);
         setState(() {
           coursesList = List<Map<String, dynamic>>.from(data);
+          filteredCoursesList = coursesList;
+          _coursesDataSource = _CoursesDataSource(
+            coursesList: filteredCoursesList,
+            onEdit: _handleEditCourse,
+            onDelete: deleteCourse,
+          );
         });
-        // Update the DataTableSource with the new data
-        _coursesDataSource = _CoursesDataSource(
-          coursesList: coursesList,
-          onEdit: _handleEditGrade,
-          onDelete: deleteCourse,
-        );
       } else {
         Notificaciones.mostrarMensaje(context, "Error al obtener cursos", color: Colors.red);
         print("Error al obtener cursos: ${response.body}");
@@ -98,8 +103,6 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
       print("Error de conexión al obtener curso: $e");
     }
   }
-
-  int? idToEdit;
 
   Future<void> updateCourse () async {
     if (idToEdit == null) {
@@ -143,6 +146,9 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
         clearTextFields();
         idToEdit = null;
       });
+      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -165,7 +171,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
     }
   }
 
-  void _handleEditGrade(Map<String, dynamic> course) {
+  void _handleEditCourse(Map<String, dynamic> course) {
     setState(() {
       idToEdit = course['id'];
       idController.text = course['id'].toString();
@@ -176,7 +182,21 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
     });
   }
 
-  late _CoursesDataSource _coursesDataSource;
+  void filterCourses(String query) {
+    final lowerQuery = query.toLowerCase();
+    setState(() {
+      filteredCoursesList = coursesList.where((course) {
+        final nombre = course['nombre']?.toLowerCase() ?? '';
+        return nombre.contains(lowerQuery);
+      }).toList();
+
+      _coursesDataSource = _CoursesDataSource(
+        coursesList: filteredCoursesList,
+        onEdit: _handleEditCourse,
+        onDelete: deleteCourse,
+      );
+    });
+  }
 
   @override
   void initState() {
@@ -184,7 +204,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
     getCourses();
     _coursesDataSource = _CoursesDataSource(
       coursesList: coursesList,
-      onEdit: _handleEditGrade,
+      onEdit: _handleEditCourse,
       onDelete: deleteCourse,
     );
   }
@@ -218,11 +238,26 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
                   children: [
                     ElevatedButton(onPressed: saveCourse, child: const Text("Guardar")),
                     IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    IconButton(onPressed: clearTextFields, icon: Icon(Icons.delete_forever_outlined, color: appColors[0])),
                     ElevatedButton(onPressed: updateCourse, child: const Text("Actualizar")),
                   ],
                 ),
                 const SizedBox(height: 20),
                 const Text("Cursos Registrados", style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Buscar por nombre',
+                    prefixIcon: Icon(Icons.search, color: Colors.teal,),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    filterCourses(value);
+                  },
+                ),
                 const SizedBox(height: 20),
                 SingleChildScrollView(
                   child: ConstrainedBox(
@@ -248,7 +283,6 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
                     ),
                   ),
                 )
-
               ],
             ),
           ),
@@ -286,11 +320,11 @@ class _CoursesDataSource extends DataTableSource{
           children: [
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => onEdit(course), // Call the onEdit callback
+              onPressed: () => onEdit(course),
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => onDelete(course['id']), // Call the onDelete callback
+              onPressed: () => onDelete(course['id']),
             ),
           ],
         )),

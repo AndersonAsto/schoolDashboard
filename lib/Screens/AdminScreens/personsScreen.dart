@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:schooldashboard/Global/global.dart';
-import 'package:schooldashboard/Utils/allNotifications.dart';
+import 'package:schooldashboard/Utils/customNotifications.dart';
+import 'package:schooldashboard/Utils/customTextFields.dart';
 
 class PersonsScreenClass extends StatefulWidget {
   const PersonsScreenClass({super.key});
@@ -22,8 +23,13 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
   TextEditingController statusController = TextEditingController();
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
 
+  int? idToEdit;
   Map<String, dynamic>? savedPersons;
+  late _PersonsDataSource _personsDataSource;
+  List<Map<String, dynamic>> personsList = [];
+  List<Map<String, dynamic>> filteredPersonsList = [];
 
   Future<void> savePerson() async {
     if (
@@ -89,9 +95,8 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
     statusController.clear();
     createdAtController.clear();
     updatedAtController.clear();
+    filterPersons("");
   }
-
-  List<Map<String, dynamic>> personsList = [];
 
   Future<void> getPersons() async {
     final url = Uri.parse('${generalURL}api/person/list');
@@ -102,9 +107,9 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
         final data = jsonDecode(response.body);
         setState(() {
           personsList = List<Map<String, dynamic>>.from(data);
-          // Update the DataTableSource with the new data
+          filteredPersonsList = personsList;
           _personsDataSource = _PersonsDataSource(
-            personsList: personsList,
+            personsList: filteredPersonsList,
             onEdit: _handleEditPerson,
             onDelete: deletePerson,
           );
@@ -118,8 +123,6 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
       print("Error de conexión al obtener datos de personas: $e");
     }
   }
-
-  int? idToEdit;
 
   Future<void> updatePerson () async {
     if (idToEdit == null) {
@@ -152,7 +155,7 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body); // You might not need to use 'data' here if the API just confirms success
+        final data = jsonDecode(response.body);
         setState(() {
           clearTextFields();
           idToEdit = null;
@@ -175,6 +178,9 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
         clearTextFields();
         idToEdit = null;
       });
+      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -197,19 +203,6 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    getPersons();
-    _personsDataSource = _PersonsDataSource(
-      personsList: personsList,
-      onEdit: _handleEditPerson,
-      onDelete: deletePerson,
-    );
-  }
-
-  late _PersonsDataSource _personsDataSource;
-
   void _handleEditPerson(Map<String, dynamic> person) {
     setState(() {
       idToEdit = person['id'];
@@ -223,6 +216,37 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
       createdAtController.text = person['createdAt'].toString();
       updatedAtController.text = person['updatedAt'].toString();
     });
+  }
+
+  void filterPersons(String query) {
+    final lowerQuery = query.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        filteredPersonsList = personsList;
+      } else {
+        filteredPersonsList = personsList.where((person) {
+          final fullName = '${person['nombre']} ${person['apellido']} ${person['dni'].toString()} ${person['correo']} ${person['telefono'].toString()}'.toLowerCase();
+          return fullName.contains(lowerQuery);
+        }).toList();
+      }
+
+      _personsDataSource = _PersonsDataSource(
+        personsList: filteredPersonsList,
+        onEdit: _handleEditPerson,
+        onDelete: deletePerson,
+      );
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getPersons();
+    _personsDataSource = _PersonsDataSource(
+      personsList: personsList,
+      onEdit: _handleEditPerson,
+      onDelete: deletePerson,
+    );
   }
 
   @override
@@ -291,11 +315,26 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
                   children: [
                     ElevatedButton(onPressed: savePerson, child: const Text("Guardar")),
                     IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    IconButton(onPressed: clearTextFields, icon: const Icon(Icons.delete_forever_outlined, color: Colors.deepOrange)),
                     ElevatedButton(onPressed: updatePerson, child: const Text("Actualizar")),
                   ],
                 ),
                 const SizedBox(height: 20),
                 const Text("Personas Registradas", style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Buscar por nombre',
+                    prefixIcon: Icon(Icons.search, color: Colors.teal,),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    filterPersons(value);
+                  },
+                ),
                 const SizedBox(height: 20),
                 SingleChildScrollView(
                   child: ConstrainedBox(

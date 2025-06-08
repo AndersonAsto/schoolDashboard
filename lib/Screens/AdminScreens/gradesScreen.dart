@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:schooldashboard/Global/global.dart';
-import 'package:schooldashboard/Utils/allNotifications.dart';
+import 'package:schooldashboard/Utils/customNotifications.dart';
+import 'package:schooldashboard/Utils/customTextFields.dart';
 
 class GradesScreenClass extends StatefulWidget {
   const GradesScreenClass({super.key});
@@ -19,7 +20,13 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
 
+  TextEditingController searchController = TextEditingController();
+  List<Map<String, dynamic>> filteredGradesList = [];
+
+  List<Map<String, dynamic>> gradesList = [];
   Map<String, dynamic>? savedGrades;
+  int? idToEdit;
+  late _GradesDataSource _gradesDataSource;
 
   Future<void> saveGrade() async {
     if (gradeController.text.trim().isEmpty) {
@@ -51,7 +58,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
         });
         clearTextFields();
         idToEdit = null;
-        await getGrades(); // Await to ensure grades are reloaded before notification
+        await getGrades();
         Notificaciones.mostrarMensaje(context, "Grado guardado correctamente", color: Colors.green);
       } else {
         Notificaciones.mostrarMensaje(context, "Error al guardar grado", color: Colors.red);
@@ -69,9 +76,8 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
     statusController.clear();
     createdAtController.clear();
     updatedAtController.clear();
+    filterGrades("");
   }
-
-  List<Map<String, dynamic>> gradesList = [];
 
   Future<void> getGrades() async {
     final url = Uri.parse('${generalURL}api/grade/list');
@@ -82,9 +88,9 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
         final data = jsonDecode(response.body);
         setState(() {
           gradesList = List<Map<String, dynamic>>.from(data);
-          // Update the DataTableSource with the new data
+          filteredGradesList = gradesList;
           _gradesDataSource = _GradesDataSource(
-            gradesList: gradesList,
+            gradesList: filteredGradesList,
             onEdit: _handleEditGrade,
             onDelete: deleteGrade,
           );
@@ -98,8 +104,6 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
       print("Error de conexión al obtener grados: $e");
     }
   }
-
-  int? idToEdit;
 
   Future<void> updateGrade() async {
     if (idToEdit == null) {
@@ -120,7 +124,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body); // You might not need to use 'data' here if the API just confirms success
+        final data = jsonDecode(response.body);
         setState(() {
           clearTextFields();
           idToEdit = null;
@@ -143,6 +147,9 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
         clearTextFields();
         idToEdit = null;
       });
+      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -165,7 +172,32 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
     }
   }
 
-  late _GradesDataSource _gradesDataSource;
+  void _handleEditGrade(Map<String, dynamic> grade) {
+    setState(() {
+      idToEdit = grade['id'];
+      idController.text = grade['id'].toString();
+      gradeController.text = grade['nombre'];
+      statusController.text = grade['estado'].toString();
+      createdAtController.text = grade['createdAt'].toString();
+      updatedAtController.text = grade['updatedAt'].toString();
+    });
+  }
+
+  void filterGrades(String query) {
+    final lowerQuery = query.toLowerCase();
+    setState(() {
+      filteredGradesList = gradesList.where((grade) {
+        final nombre = grade['nombre']?.toLowerCase() ?? '';
+        return nombre.contains(lowerQuery);
+      }).toList();
+
+      _gradesDataSource = _GradesDataSource(
+        gradesList: filteredGradesList,
+        onEdit: _handleEditGrade,
+        onDelete: deleteGrade,
+      );
+    });
+  }
 
   @override
   void initState() {
@@ -176,17 +208,6 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
       onEdit: _handleEditGrade,
       onDelete: deleteGrade,
     );
-  }
-
-  void _handleEditGrade(Map<String, dynamic> grade) {
-    setState(() {
-      idToEdit = grade['id'];
-      idController.text = grade['id'].toString();
-      gradeController.text = grade['nombre'];
-      statusController.text = grade['estado'].toString();
-      createdAtController.text = grade['createdAt'].toString();
-      updatedAtController.text = grade['updatedAt'].toString();
-    });
   }
 
   @override
@@ -218,11 +239,26 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
                   children: [
                     ElevatedButton(onPressed: saveGrade, child: const Text("Guardar")),
                     IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    IconButton(onPressed: clearTextFields, icon: const Icon(Icons.delete_forever_outlined, color: Colors.deepOrange)),
                     ElevatedButton(onPressed: updateGrade, child: const Text("Actualizar")),
                   ],
                 ),
                 const SizedBox(height: 20),
                 const Text("Grados Registrados", style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    labelText: 'Buscar por nombre',
+                    prefixIcon: Icon(Icons.search, color: Colors.teal,),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    filterGrades(value);
+                  },
+                ),
                 const SizedBox(height: 20),
 
                 SingleChildScrollView(

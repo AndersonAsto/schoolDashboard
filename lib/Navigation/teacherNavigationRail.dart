@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:schooldashboard/Screens/StudentScreens/assistancesScreen.dart';
-import 'package:schooldashboard/Screens/StudentScreens/incidentsScreen.dart';
-import 'package:schooldashboard/Screens/StudentScreens/qualificationsScreen.dart';
+import 'package:schooldashboard/Screens/TeacherScreens/incidentsScreen.dart';
+import 'package:schooldashboard/Screens/TeacherScreens/assistancesScreen.dart';
+import 'package:schooldashboard/Screens/TeacherScreens/qualificationsScreen.dart';
 
 class TeacherNavigationRail extends StatefulWidget {
   const TeacherNavigationRail({super.key});
@@ -11,7 +11,6 @@ class TeacherNavigationRail extends StatefulWidget {
 }
 
 class _TeacherNavigationRailState extends State<TeacherNavigationRail> {
-
   int selectedIndex = 0;
 
   final List<Widget> pages = [
@@ -62,7 +61,7 @@ class _TeacherNavigationRailState extends State<TeacherNavigationRail> {
             child: Container(
               child: pages[selectedIndex],
             ),
-          )
+          ),
         ],
       ),
     );

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:schooldashboard/Screens/coursesScreen.dart';
-import 'package:schooldashboard/Screens/gradesScreen.dart';
-import 'package:schooldashboard/Screens/personsScreen.dart';
-import 'package:schooldashboard/Screens/schedulesScreen.dart';
-import 'package:schooldashboard/Screens/studentsScreen.dart';
-import 'package:schooldashboard/Screens/usersScreen.dart';
+import 'package:schooldashboard/Screens/AdminScreens/usersScreen.dart';
+import 'package:schooldashboard/Screens/AdminScreens/gradesScreen.dart';
+import 'package:schooldashboard/Screens/AdminScreens/personsScreen.dart';
+import 'package:schooldashboard/Screens/AdminScreens/coursesScreen.dart';
+import 'package:schooldashboard/Screens/AdminScreens/studentsScreen.dart';
+import 'package:schooldashboard/Screens/AdminScreens/schedulesScreen.dart';
 
 class AdminNavigationRail extends StatefulWidget {
   const AdminNavigationRail({super.key});

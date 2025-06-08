@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:schooldashboard/LogIn/principalLogIn.dart';
 import 'package:schooldashboard/Navigation/adminNavigationRail.dart';
-import 'package:schooldashboard/Navigation/teacherNavigationRail.dart';
-import 'package:schooldashboard/Screens/gradesScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +17,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'schoolDashboard',
+      title: 'SchoolNet',
       debugShowCheckedModeBanner: false,
       home: AdminNavigationRail(),
       theme: ThemeData(
