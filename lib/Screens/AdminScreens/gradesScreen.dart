@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:schooldashboard/Global/global.dart';
-import 'package:schooldashboard/Utils/customNotifications.dart';
 import 'package:schooldashboard/Utils/customTextFields.dart';
+import 'package:schooldashboard/Utils/customNotifications.dart';
 
 class GradesScreenClass extends StatefulWidget {
   const GradesScreenClass({super.key});
@@ -19,26 +19,23 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
   TextEditingController statusController = TextEditingController();
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
-
   TextEditingController searchController = TextEditingController();
-  List<Map<String, dynamic>> filteredGradesList = [];
 
-  List<Map<String, dynamic>> gradesList = [];
-  Map<String, dynamic>? savedGrades;
   int? idToEdit;
+  Map<String, dynamic>? savedGrades;
   late _GradesDataSource _gradesDataSource;
+  List<Map<String, dynamic>> gradesList = [];
+  List<Map<String, dynamic>> filteredGradesList = [];
 
   Future<void> saveGrade() async {
     if (gradeController.text.trim().isEmpty) {
-      Notificaciones.mostrarMensaje(context, "El nombre del grado no puede estar vacío.", color: Colors.red);
+      Notificaciones.showNotification(context, "El nombre del grado no puede estar vacío.", color: appColors[0]);
       return;
     }
-
     if (idToEdit != null) {
-      Notificaciones.mostrarMensaje(context, "Estás editando un grado. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      Notificaciones.showNotification(context, "Estás editando un grado. Cancela la edición para guardar uno nuevo.", color: appColors[0]);
       return;
     }
-
     final url = Uri.parse('${generalURL}api/grade/register');
     try {
       final response = await http.post(
@@ -46,7 +43,6 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"nombre": gradeController.text}),
       );
-
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -59,31 +55,21 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
         clearTextFields();
         idToEdit = null;
         await getGrades();
-        Notificaciones.mostrarMensaje(context, "Grado guardado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Grado guardado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al guardar grado", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al guardar grado", color: appColors[0]);
         print("Error al guardar grado: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: appColors[0]);
       print("Error de conexión al guardar grado: $e");
     }
-  }
-
-  void clearTextFields() {
-    idController.clear();
-    gradeController.clear();
-    statusController.clear();
-    createdAtController.clear();
-    updatedAtController.clear();
-    filterGrades("");
   }
 
   Future<void> getGrades() async {
     final url = Uri.parse('${generalURL}api/grade/list');
     try {
       final response = await http.get(url);
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -96,22 +82,22 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
           );
         });
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al obtener grados", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al obtener grados", color: appColors[0]);
         print("Error al obtener grados: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: appColors[0]);
       print("Error de conexión al obtener grados: $e");
     }
   }
 
   Future<void> updateGrade() async {
     if (idToEdit == null) {
-      Notificaciones.mostrarMensaje(context, "Selecciona un grado para actualizar", color: Colors.red);
+      Notificaciones.showNotification(context, "Selecciona un grado para actualizar", color: appColors[0]);
       return;
     }
     if (gradeController.text.trim().isEmpty) {
-      Notificaciones.mostrarMensaje(context, "El nombre del grado no puede estar vacío.", color: Colors.red);
+      Notificaciones.showNotification(context, "El nombre del grado no puede estar vacío.", color: appColors[0]);
       return;
     }
 
@@ -130,26 +116,14 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
           idToEdit = null;
         });
         await getGrades();
-        Notificaciones.mostrarMensaje(context, "Grado actualizado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Grado actualizado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al actualizar grado", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al actualizar grado", color: appColors[0]);
         print("Error al actualizar grado: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: appColors[0]);
       print("Error de conexión al actualizar grado: $e");
-    }
-  }
-
-  Future<void> cancelUpdate() async {
-    if (idToEdit != null) {
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
-    } else {
-      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -161,15 +135,39 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
       if (response.statusCode == 200) {
         print("Grado eliminado: $id");
         await getGrades();
-        Notificaciones.mostrarMensaje(context, "Grado eliminado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Grado eliminado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al eliminar grado", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al eliminar grado", color: appColors[0]);
         print("Error al eliminar grado: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: appColors[0]);
       print("Error de conexión al eliminar grado: $e");
     }
+  }
+
+  void clearTextFields() {
+    idController.clear();
+    gradeController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+    filterGrades("");
+  }
+
+  void filterGrades(String query) {
+    final lowerQuery = query.toLowerCase();
+    setState(() {
+      filteredGradesList = gradesList.where((grade) {
+        final nombre = grade['nombre']?.toLowerCase() ?? '';
+        return nombre.contains(lowerQuery);
+      }).toList();
+      _gradesDataSource = _GradesDataSource(
+        gradesList: filteredGradesList,
+        onEdit: _handleEditGrade,
+        onDelete: deleteGrade,
+      );
+    });
   }
 
   void _handleEditGrade(Map<String, dynamic> grade) {
@@ -183,20 +181,16 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
     });
   }
 
-  void filterGrades(String query) {
-    final lowerQuery = query.toLowerCase();
-    setState(() {
-      filteredGradesList = gradesList.where((grade) {
-        final nombre = grade['nombre']?.toLowerCase() ?? '';
-        return nombre.contains(lowerQuery);
-      }).toList();
-
-      _gradesDataSource = _GradesDataSource(
-        gradesList: filteredGradesList,
-        onEdit: _handleEditGrade,
-        onDelete: deleteGrade,
-      );
-    });
+  Future<void> cancelUpdate() async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      Notificaciones.showNotification(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.showNotification(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
+    }
   }
 
   @override
@@ -238,8 +232,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(onPressed: saveGrade, child: const Text("Guardar")),
-                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
-                    IconButton(onPressed: clearTextFields, icon: const Icon(Icons.delete_forever_outlined, color: Colors.deepOrange)),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.clear_all, color: Colors.deepOrange)),
                     ElevatedButton(onPressed: updateGrade, child: const Text("Actualizar")),
                   ],
                 ),
@@ -250,7 +243,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
                   controller: searchController,
                   decoration: InputDecoration(
                     labelText: 'Buscar por nombre',
-                    prefixIcon: Icon(Icons.search, color: Colors.teal,),
+                    prefixIcon: const Icon(Icons.search, color: Colors.teal,),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -260,7 +253,6 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
                   },
                 ),
                 const SizedBox(height: 20),
-
                 SingleChildScrollView(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
@@ -273,15 +265,13 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
                         DataColumn(label: Text('Actualizado')),
                         DataColumn(label: Text('Acciones')),
                       ],
-                      source: _gradesDataSource, // Our custom data source
-                      rowsPerPage: 10, // Set 15 rows per page
+                      source: _gradesDataSource,
+                      rowsPerPage: 10,
                       onPageChanged: (int page) {
-                        // Optional: You can add logic here if you need to do something when the page changes
                         print('Page changed to: $page');
                       },
-                      // Optional: Adjust available rows per page options
                       availableRowsPerPage: const [5, 10, 15, 20, 50],
-                      showCheckboxColumn: false, // Hide checkboxes if not needed
+                      showCheckboxColumn: false,
                     ),
                   ),
                 ),
@@ -321,12 +311,12 @@ class _GradesDataSource extends DataTableSource {
         DataCell(Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => onEdit(grade), // Call the onEdit callback
+              icon: Icon(Icons.edit, color: appColors[1]),
+              onPressed: () => onEdit(grade),
             ),
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => onDelete(grade['id']), // Call the onDelete callback
+              icon: Icon(Icons.delete, color: appColors[0]),
+              onPressed: () => onDelete(grade['id']),
             ),
           ],
         )),
@@ -335,11 +325,11 @@ class _GradesDataSource extends DataTableSource {
   }
 
   @override
-  bool get isRowCountApproximate => false; // We know the exact row count
+  bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => gradesList.length; // Total number of rows
+  int get rowCount => gradesList.length;
 
   @override
-  int get selectedRowCount => 0; // No rows are selected by default
+  int get selectedRowCount => 0;
 }

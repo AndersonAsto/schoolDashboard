@@ -38,7 +38,7 @@ Future<void> showGradeSelection(BuildContext context, TextEditingController cont
       },
     );
   } else {
-    Notificaciones.mostrarMensaje(context, "Error al obtener los grados", color: Colors.red);
+    Notificaciones.showNotification(context, "Error al obtener los grados", color: appColors[0]);
   }
 }
 
@@ -77,7 +77,7 @@ Future<void> showCourseSelection(BuildContext context, TextEditingController con
       },
     );
   } else {
-    Notificaciones.mostrarMensaje(context, "Error al cargar cursos disponibles", color: Colors.red);
+    Notificaciones.showNotification(context, "Error al cargar cursos disponibles", color: appColors[0]);
     print("Error al cargar cursos disponibles: ${response.body}");
   }
 }

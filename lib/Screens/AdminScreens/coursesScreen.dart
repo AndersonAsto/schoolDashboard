@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:schooldashboard/Global/global.dart';
-import 'package:schooldashboard/Utils/customNotifications.dart';
 import 'package:schooldashboard/Utils/customTextFields.dart';
+import 'package:schooldashboard/Utils/customNotifications.dart';
 
 class CoursesScreenClass extends StatefulWidget {
   const CoursesScreenClass({super.key});
@@ -19,25 +19,23 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
   TextEditingController statusController = TextEditingController();
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
-
   TextEditingController searchController = TextEditingController();
+
   List<Map<String, dynamic>> filteredCoursesList = [];
   List<Map<String,dynamic>> coursesList = [];
+  late _CoursesDataSource _coursesDataSource;
   Map<String, dynamic>? savedCourses;
   int? idToEdit;
-  late _CoursesDataSource _coursesDataSource;
 
   Future<void> saveCourse() async {
     if(courseController.text.trim().isEmpty){
-      Notificaciones.mostrarMensaje(context, "El nombre del curso no puede estar vacío.", color: Colors.red);
+      Notificaciones.showNotification(context, "El nombre del curso no puede estar vacío.", color: Colors.red);
       return;
     }
-
     if (idToEdit != null) {
-      Notificaciones.mostrarMensaje(context, "Estás editando un grado. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      Notificaciones.showNotification(context, "Estás editando un grado. Cancela la edición para guardar uno nuevo.", color: Colors.red);
       return;
     }
-
     final url = Uri.parse('${generalURL}api/course/register');
     try{
       final response = await http.post(
@@ -45,7 +43,6 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"nombre": courseController.text}),
       );
-
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -58,24 +55,15 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
         clearTextFields();
         idToEdit = null;
         getCourses();
-        Notificaciones.mostrarMensaje(context, "Curso guardado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Curso guardado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al guardar curso", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al guardar curso", color: Colors.red);
         print("Error al guardar grado: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al guardar curso: $e");
     }
-  }
-
-  void clearTextFields (){
-    idController.clear();
-    courseController.clear();
-    statusController.clear();
-    createdAtController.clear();
-    updatedAtController.clear();
-    filterCourses("");
   }
 
   Future<void> getCourses() async {
@@ -95,22 +83,22 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
           );
         });
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al obtener cursos", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al obtener cursos", color: Colors.red);
         print("Error al obtener cursos: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al obtener curso: $e");
     }
   }
 
   Future<void> updateCourse () async {
     if (idToEdit == null) {
-      Notificaciones.mostrarMensaje(context, "Selecciona un curso para actualizar", color: Colors.red);
+      Notificaciones.showNotification(context, "Selecciona un curso para actualizar", color: Colors.red);
       return;
     }
     if (courseController.text.trim().isEmpty) {
-      Notificaciones.mostrarMensaje(context, "El nombre del grado no puede estar vacío.", color: Colors.red);
+      Notificaciones.showNotification(context, "El nombre del grado no puede estar vacío.", color: Colors.red);
       return;
     }
 
@@ -129,26 +117,14 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
           idToEdit = null;
         });
         await getCourses();
-        Notificaciones.mostrarMensaje(context, "Curso actualizado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Curso actualizado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al actualizar curso", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al actualizar curso", color: Colors.red);
         print("Error al actualizar curso: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al actualizar curso: $e");
-    }
-  }
-
-  Future<void> cancelUpdate () async {
-    if (idToEdit != null) {
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
-    } else {
-      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -160,14 +136,34 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
       if (response.statusCode == 200) {
         print("Curso eliminado: $id");
         await getCourses();
-        Notificaciones.mostrarMensaje(context, "Curso eliminado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Curso eliminado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al eliminar curso", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al eliminar curso", color: Colors.red);
         print("Error al eliminar curso: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al eliminar curso: $e");
+    }
+  }
+  void clearTextFields (){
+    idController.clear();
+    courseController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+    filterCourses("");
+  }
+
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      Notificaciones.showNotification(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.showNotification(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -237,8 +233,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(onPressed: saveCourse, child: const Text("Guardar")),
-                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
-                    IconButton(onPressed: clearTextFields, icon: Icon(Icons.delete_forever_outlined, color: appColors[0])),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.clear_all, color: Colors.deepOrange)),
                     ElevatedButton(onPressed: updateCourse, child: const Text("Actualizar")),
                   ],
                 ),
@@ -249,7 +244,7 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
                   controller: searchController,
                   decoration: InputDecoration(
                     labelText: 'Buscar por nombre',
-                    prefixIcon: Icon(Icons.search, color: Colors.teal,),
+                    prefixIcon: const Icon(Icons.search, color: Colors.teal,),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -271,15 +266,13 @@ class _CoursesScreenClassState extends State<CoursesScreenClass> {
                         DataColumn(label: Text('Actualizado')),
                         DataColumn(label: Text('Acciones')),
                       ],
-                      source: _coursesDataSource, // Our custom data source
-                      rowsPerPage: 10, // Set 15 rows per page
+                      source: _coursesDataSource,
+                      rowsPerPage: 10,
                       onPageChanged: (int page) {
-                        // Optional: You can add logic here if you need to do something when the page changes
                         print('Page changed to: $page');
                       },
-                      // Optional: Adjust available rows per page options
                       availableRowsPerPage: const [5, 10, 15, 20, 50],
-                      showCheckboxColumn: false, // Hide checkboxes if not needed
+                      showCheckboxColumn: false,
                     ),
                   ),
                 )
@@ -333,11 +326,11 @@ class _CoursesDataSource extends DataTableSource{
   }
 
   @override
-  bool get isRowCountApproximate => false; // We know the exact row count
+  bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => coursesList.length; // Total number of rows
+  int get rowCount => coursesList.length;
 
   @override
-  int get selectedRowCount => 0; // No rows are selected by default
+  int get selectedRowCount => 0;
 }

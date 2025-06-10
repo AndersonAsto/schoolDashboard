@@ -29,41 +29,11 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   TextEditingController gradeDisplayController = TextEditingController();
   TextEditingController searchController = TextEditingController();
 
-  Map<String,dynamic>? savedSchedules;
-  List<Map<String, dynamic>> schedulesList = [];
-  int? idToEdit;
-  late _SchedulesDataSource _schedulesDataSource;
   List<Map<String, dynamic>> filteredSchedulesList = [];
-
-  @override
-  void initState() {
-    super.initState();
-    getSchedules();
-    _schedulesDataSource = _SchedulesDataSource(
-      schedulesList: schedulesList,
-      onEdit: _handleEditSchedule,
-      onDelete: deleteSchedule,
-    );
-  }
-
-  void _handleEditSchedule(Map<String, dynamic> schedule) {
-    setState(() {
-      idToEdit = schedule['id'];
-      idController.text = schedule['id'].toString();
-      teacherIdController.text = schedule['docente']['id'].toString();
-      teacherDisplayController.text = '${schedule['docente']['id']} - ${schedule['docente']['persona']['nombre']} ${schedule['docente']['persona']['apellido']}';
-      courseIdController.text = schedule['curso']['id'].toString();
-      courseDisplayController.text = '${schedule['curso']['id']} - ${schedule['curso']['nombre']}';
-      gradeIdController.text = schedule['grado']['id'].toString();
-      gradeDisplayController.text = '${schedule['grado']['id']} - ${schedule['grado']['nombre']}';
-      dayController.text = schedule['fecha']; // Assuming 'fecha' is the day
-      startTimeController.text = schedule['hora_inicio'];
-      endTimeController.text = schedule['hora_fin'];
-      statusController.text = schedule['estado'].toString();
-      createdAtController.text = schedule['createdAt'].toString();
-      updatedAtController.text = schedule['updatedAt'].toString();
-    });
-  }
+  late _SchedulesDataSource _schedulesDataSource;
+  List<Map<String, dynamic>> schedulesList = [];
+  Map<String,dynamic>? savedSchedules;
+  int? idToEdit;
 
   Future<void> saveSchedule() async {
     if(
@@ -74,12 +44,12 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
         startTimeController.text.trim().isEmpty ||
         endTimeController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Algunos campos aún están vacíos.", color: Colors.red);
+      Notificaciones.showNotification(context, "Algunos campos aún están vacíos.", color: Colors.red);
       return;
     }
 
     if (idToEdit != null) {
-      Notificaciones.mostrarMensaje(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      Notificaciones.showNotification(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
       return;
     }
 
@@ -110,32 +80,15 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
         clearTextFields();
         idToEdit = null;
         await getSchedules(); // Await to ensure schedules are reloaded before notification
-        Notificaciones.mostrarMensaje(context, "Horario guardado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Horario guardado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al guardar horario", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al guardar horario", color: Colors.red);
         print("Error al guardar horario: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al guardar horario: $e");
     }
-  }
-
-  void clearTextFields (){
-    idController.clear();
-    teacherIdController.clear();
-    courseIdController.clear();
-    gradeIdController.clear();
-    dayController.clear();
-    startTimeController.clear();
-    endTimeController.clear();
-    statusController.clear();
-    createdAtController.clear();
-    updatedAtController.clear();
-    teacherDisplayController.clear();
-    courseDisplayController.clear();
-    gradeDisplayController.clear();
-    filterSchedules("");
   }
 
   Future<void> getSchedules() async {
@@ -155,18 +108,18 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
           );
         });
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al obtener datos de horarios", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al obtener datos de horarios", color: Colors.red);
         print("Error al obtener datos de horarios: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al obtener datos de horarios: $e");
     }
   }
 
   Future<void> updateSchedule () async {
     if (idToEdit == null) {
-      Notificaciones.mostrarMensaje(context, "Selecciona un horario para actualizar", color: Colors.red);
+      Notificaciones.showNotification(context, "Selecciona un horario para actualizar", color: Colors.red);
       return;
     }
     if(
@@ -177,7 +130,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
         startTimeController.text.trim().isEmpty ||
         endTimeController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Algunos campos aún están vacíos.", color: Colors.red);
+      Notificaciones.showNotification(context, "Algunos campos aún están vacíos.", color: Colors.red);
       return;
     }
 
@@ -203,26 +156,14 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
           idToEdit = null;
         });
         await getSchedules();
-        Notificaciones.mostrarMensaje(context, "Horario actualizado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Horario actualizado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al actualizar horario", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al actualizar horario", color: Colors.red);
         print("Error al actualizar horario: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al actualizar horario: $e");
-    }
-  }
-
-  Future<void> cancelUpdate () async {
-    if (idToEdit != null) {
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
-    } else {
-      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -234,15 +175,63 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
       if (response.statusCode == 200) {
         print("Horario eliminado: $id");
         await getSchedules();
-        Notificaciones.mostrarMensaje(context, "Horario eliminado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Horario eliminado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al eliminar horario", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al eliminar horario", color: Colors.red);
         print("Error al eliminar horario: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al eliminar horario: $e");
     }
+  }
+
+  void clearTextFields (){
+    idController.clear();
+    teacherIdController.clear();
+    courseIdController.clear();
+    gradeIdController.clear();
+    dayController.clear();
+    startTimeController.clear();
+    endTimeController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+    teacherDisplayController.clear();
+    courseDisplayController.clear();
+    gradeDisplayController.clear();
+    filterSchedules("");
+  }
+
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      Notificaciones.showNotification(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.showNotification(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
+    }
+  }
+
+  void _handleEditSchedule(Map<String, dynamic> schedule) {
+    setState(() {
+      idToEdit = schedule['id'];
+      idController.text = schedule['id'].toString();
+      teacherIdController.text = schedule['docente']['id'].toString();
+      teacherDisplayController.text = '${schedule['docente']['id']} - ${schedule['docente']['persona']['nombre']} ${schedule['docente']['persona']['apellido']}';
+      courseIdController.text = schedule['curso']['id'].toString();
+      courseDisplayController.text = '${schedule['curso']['id']} - ${schedule['curso']['nombre']}';
+      gradeIdController.text = schedule['grado']['id'].toString();
+      gradeDisplayController.text = '${schedule['grado']['id']} - ${schedule['grado']['nombre']}';
+      dayController.text = schedule['fecha']; // Assuming 'fecha' is the day
+      startTimeController.text = schedule['hora_inicio'];
+      endTimeController.text = schedule['hora_fin'];
+      statusController.text = schedule['estado'].toString();
+      createdAtController.text = schedule['createdAt'].toString();
+      updatedAtController.text = schedule['updatedAt'].toString();
+    });
   }
 
   Future<void> showTeacherSelection(BuildContext context) async {
@@ -281,11 +270,11 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
           },
         );
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al cargar docentes disponibles", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al cargar docentes disponibles", color: Colors.red);
         print("Error al cargar docentes disponibles: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión al cargar docentes: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión al cargar docentes: $e", color: Colors.red);
       print("Error de conexión al cargar docentes: $e");
     }
   }
@@ -346,6 +335,17 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
         onDelete: deleteSchedule,
       );
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getSchedules();
+    _schedulesDataSource = _SchedulesDataSource(
+      schedulesList: schedulesList,
+      onEdit: _handleEditSchedule,
+      onDelete: deleteSchedule,
+    );
   }
 
   @override
@@ -454,7 +454,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Día", controller: dayController, enabled: false,)),
+                    Expanded(child: CustomTextField(label: "Día", controller: dayController, enabled: false)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: SizedBox(
@@ -550,7 +550,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(onPressed: saveSchedule, child: const Text("Guardar")),
-                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.clear_all, color: Colors.deepOrange)),
                     ElevatedButton(onPressed: updateSchedule, child: const Text("Actualizar")),
                   ],
                 ),

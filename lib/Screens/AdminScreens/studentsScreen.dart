@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:schooldashboard/Global/global.dart';
 import 'package:schooldashboard/Utils/customNotifications.dart';
-import 'package:schooldashboard/Utils/customTextFields.dart';
 import 'package:schooldashboard/Utils/showDataSelection.dart';
+import 'package:schooldashboard/Utils/customTextFields.dart';
+import 'package:schooldashboard/Global/global.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class StudentsScreenClass extends StatefulWidget{
+  const StudentsScreenClass({super.key});
+
   @override
   State<StudentsScreenClass> createState() => _StudentsScreenClassState();
 }
@@ -28,31 +30,17 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
   List<Map<String, dynamic>> studentsList = [];
   List<Map<String, dynamic>> filteredStudentsList = [];
 
-  void _handleEditStudent(Map<String, dynamic> student) {
-    setState(() {
-      idToEdit = student['id'];
-      idController.text = student['id'].toString();
-      studentIdController.text = student['alumno']['id'].toString();
-      studentDisplayController.text = '${student['alumno']['id']} - ${student['alumno']['nombre']} ${student['alumno']['apellido']}';
-      gradeIdController.text = student['grado']['id'].toString();
-      gradeDisplayController.text = '${student['grado']['id']} - ${student['grado']['nombre']}';
-      statusController.text = student['estado'].toString();
-      createdAtController.text = student['createdAt'].toString();
-      updatedAtController.text = student['updatedAt'].toString();
-    });
-  }
-
   Future<void> saveStudent() async {
     if(
     studentIdController.text.trim().isEmpty ||
         gradeIdController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Algunos campos aún están vacíos.", color: Colors.red);
+      Notificaciones.showNotification(context, "Algunos campos aún están vacíos.", color: Colors.red);
       return;
     }
 
     if (idToEdit != null) {
-      Notificaciones.mostrarMensaje(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      Notificaciones.showNotification(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
       return;
     }
 
@@ -79,27 +67,15 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
         clearTextFields();
         idToEdit = null;
         await getStudents(); // Await to ensure students are reloaded before notification
-        Notificaciones.mostrarMensaje(context, "Estudiante guardado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Estudiante guardado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al guardar estudiante", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al guardar estudiante", color: Colors.red);
         print("Error al guardar estudiante: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al guardar estudiante: $e");
     }
-  }
-
-  void clearTextFields (){
-    idController.clear();
-    studentIdController.clear();
-    gradeIdController.clear();
-    statusController.clear();
-    createdAtController.clear();
-    updatedAtController.clear();
-    studentDisplayController.clear();
-    gradeDisplayController.clear();
-    filterStudents("");
   }
 
   Future<void> getStudents() async {
@@ -118,25 +94,25 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
           );
         });
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al obtener datos de estudiantes", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al obtener datos de estudiantes", color: Colors.red);
         print("Error al obtener datos de estudiantes: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al obtener datos de estudiantes: $e");
     }
   }
 
   Future<void> updateStudent () async {
     if (idToEdit == null) {
-      Notificaciones.mostrarMensaje(context, "Selecciona un estudiante para actualizar", color: Colors.red);
+      Notificaciones.showNotification(context, "Selecciona un estudiante para actualizar", color: Colors.red);
       return;
     }
     if(
     studentIdController.text.trim().isEmpty ||
         gradeIdController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Algunos campos aún están vacíos.", color: Colors.red);
+      Notificaciones.showNotification(context, "Algunos campos aún están vacíos.", color: Colors.red);
       return;
     }
 
@@ -158,26 +134,14 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
           idToEdit = null;
         });
         await getStudents();
-        Notificaciones.mostrarMensaje(context, "Estudiante actualizado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Estudiante actualizado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al actualizar estudiante", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al actualizar estudiante", color: Colors.red);
         print("Error al actualizar estudiante: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al actualizar estudiante: $e");
-    }
-  }
-
-  Future<void> cancelUpdate () async {
-    if (idToEdit != null) {
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
-    } else {
-      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -189,15 +153,53 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
       if (response.statusCode == 200) {
         print("Estudiante retirado: $id");
         await getStudents();
-        Notificaciones.mostrarMensaje(context, "Estudiante eliminado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Estudiante eliminado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al retirar estudiante", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al retirar estudiante", color: Colors.red);
         print("Error al retirar estudiante: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al retirar estudiante: $e");
     }
+  }
+
+  void clearTextFields (){
+    idController.clear();
+    studentIdController.clear();
+    gradeIdController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+    studentDisplayController.clear();
+    gradeDisplayController.clear();
+    filterStudents("");
+  }
+
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      Notificaciones.showNotification(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.showNotification(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
+    }
+  }
+
+  void _handleEditStudent(Map<String, dynamic> student) {
+    setState(() {
+      idToEdit = student['id'];
+      idController.text = student['id'].toString();
+      studentIdController.text = student['alumno']['id'].toString();
+      studentDisplayController.text = '${student['alumno']['id']} - ${student['alumno']['nombre']} ${student['alumno']['apellido']}';
+      gradeIdController.text = student['grado']['id'].toString();
+      gradeDisplayController.text = '${student['grado']['id']} - ${student['grado']['nombre']}';
+      statusController.text = student['estado'].toString();
+      createdAtController.text = student['createdAt'].toString();
+      updatedAtController.text = student['updatedAt'].toString();
+    });
   }
 
   Future<void> showPersonSelection(BuildContext context) async {
@@ -236,11 +238,11 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
           },
         );
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al cargar personas disponibles", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al cargar personas disponibles", color: Colors.red);
         print("Error al cargar personas disponibles: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión al cargar personas: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión al cargar personas: $e", color: Colors.red);
       print("Error de conexión al cargar personas: $e");
     }
   }
@@ -352,7 +354,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(onPressed: saveStudent, child: const Text("Guardar")),
-                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.clear_all, color: Colors.deepOrange)),
                     ElevatedButton(onPressed: updateStudent, child: const Text("Actualizar")),
                   ],
                 ),

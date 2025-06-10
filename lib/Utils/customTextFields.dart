@@ -28,6 +28,12 @@ class CommonInfoFields extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: Colors.black,
+                  ),
+                ),
               ),
             ),
           ),
@@ -45,6 +51,12 @@ class CommonInfoFields extends StatelessWidget {
                 contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ),
@@ -70,34 +82,44 @@ class CommonTimestampsFields extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-            child: SizedBox(
-              height: 36,
-              child: TextField(
-                decoration:
-                InputDecoration(
-                  labelText: "Creado el...",
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            height: 36,
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: "Creado el...",
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: Colors.black,
                   ),
                 ),
-                controller: createdAtController,
-                style: TextStyle(fontSize: 13),
-                enabled: false,
               ),
-            )
+              controller: createdAtController,
+              style: TextStyle(fontSize: 13),
+              enabled: false,
+            ),
+          ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: SizedBox(
             height: 36,
             child: TextField(
-              decoration:
-              InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Actualizado el...",
                 contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: Colors.black,
+                  ),
                 ),
               ),
               controller: updatedAtController,
@@ -134,8 +156,16 @@ class CustomTextField extends StatelessWidget {
       child: TextField(
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+              width: 1,
+              color: Colors.black,
+            ),
+          ),
         ),
         style: TextStyle(fontSize: 13),
         controller: controller,

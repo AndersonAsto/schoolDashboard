@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sidebarx/sidebarx.dart';
 import 'package:schooldashboard/Screens/AdminScreens/usersScreen.dart';
 import 'package:schooldashboard/Screens/AdminScreens/gradesScreen.dart';
 import 'package:schooldashboard/Screens/AdminScreens/personsScreen.dart';
@@ -14,7 +15,7 @@ class AdminNavigationRail extends StatefulWidget {
 }
 
 class _AdminNavigationRailState extends State<AdminNavigationRail> {
-  int selectedIndex = 0;
+  final SidebarXController _controller = SidebarXController(selectedIndex: 0, extended: true);
 
   final List<Widget> pages = [
     GradesScreenClass(),
@@ -22,67 +23,81 @@ class _AdminNavigationRailState extends State<AdminNavigationRail> {
     PersonsScreenClass(),
     UsersScreenClass(),
     StudentsScreenClass(),
-    SchedulesScreenClass()
+    SchedulesScreenClass(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final isCollapsed = MediaQuery.of(context).size.width < 700;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCollapsed = constraints.maxWidth < 700;
+        _controller.setExtended(!isCollapsed);
 
-    return Scaffold(
-      body: Row(
-        children: [
-          Container(
-            color: Colors.black,
-            child: NavigationRail(
-              backgroundColor: Colors.black,
-              extended: !isCollapsed,
-              selectedIndex: selectedIndex,
-              onDestinationSelected: (int index) {
-                setState(() {
-                  selectedIndex = index;
-                });
-              },
-              selectedIconTheme: IconThemeData(color: Colors.black),
-              unselectedIconTheme: IconThemeData(color: Colors.white),
-              selectedLabelTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              unselectedLabelTextStyle: TextStyle(color: Colors.white),
-              indicatorColor: Colors.white,
-              destinations: const [
-                NavigationRailDestination(
-                  icon: Icon(Icons.home),
-                  label: Text('Grados'),
+        return Scaffold(
+          body: Row(
+            children: [
+              SidebarX(
+                controller: _controller,
+                theme: SidebarXTheme(
+                  margin: const EdgeInsets.all(0),
+                  decoration: const BoxDecoration(color: Colors.black),
+                  hoverColor: Colors.grey[800],
+                  textStyle: const TextStyle(color: Colors.white),
+                  selectedTextStyle: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  selectedItemDecoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  iconTheme: const IconThemeData(color: Colors.white),
+                  selectedIconTheme: const IconThemeData(color: Colors.black),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.people),
-                  label: Text('Cursos'),
+                extendedTheme: SidebarXTheme(
+                  width: 250,
+                  decoration: const BoxDecoration(color: Colors.black),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.settings),
-                  label: Text('Personas'),
+                headerBuilder: (context, extended) => extended
+                    ? const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bienvenid@,',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                      SizedBox(height: 5,),
+                      Divider(color: Colors.white, height: 3,)
+                    ],
+                  ),
+                )
+                    : const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Icon(Icons.person, color: Colors.white, size: 32),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.work),
-                  label: Text('Usuarios'),
+                items: const [
+                  SidebarXItem(icon: Icons.home, label: 'Grados'),
+                  SidebarXItem(icon: Icons.people, label: 'Cursos'),
+                  SidebarXItem(icon: Icons.settings, label: 'Personas'),
+                  SidebarXItem(icon: Icons.work, label: 'Usuarios'),
+                  SidebarXItem(icon: Icons.group_add, label: 'Estudiantes'),
+                  SidebarXItem(icon: Icons.table_chart, label: 'Horarios'),
+                ],
+              ),
+              Expanded(
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, _) {
+                    return pages[_controller.selectedIndex];
+                  },
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.group_add),
-                  label: Text('Estudiantes'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.table_chart),
-                  label: Text('Horarios'),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Container(
-              child: pages[selectedIndex],
-            ),
-          )
-        ],
-      ),
+        );
+      },
     );
   }
 }

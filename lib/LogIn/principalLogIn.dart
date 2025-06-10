@@ -3,8 +3,9 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:schooldashboard/Global/global.dart';
 import 'package:schooldashboard/Navigation/adminNavigationRail.dart';
-import 'package:schooldashboard/Navigation/teacherNavigationRail.dart';
 import 'package:http/http.dart' as http;
+import 'package:schooldashboard/Navigation/teacherNavigationRail.dart';
+import 'package:schooldashboard/Utils/customNotifications.dart';
 import 'package:schooldashboard/Utils/customTextFields.dart';
 
 class PrincipalLogInScreen extends StatefulWidget {
@@ -66,11 +67,15 @@ class _PrincipalLogInScreenState extends State<PrincipalLogInScreen> {
             context,
             MaterialPageRoute(builder: (context) => AdminNavigationRail()),
           );
+          Notificaciones.showNotification(context, "Inicio de sesión exitoso", color: Colors.teal);
         } else if (rol == 'Docente'){
+          final docenteId = data['user']['id'];
+          final userName = data['user']['username'];
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => TeacherNavigationRail()),
+            MaterialPageRoute(builder: (context) => TeacherNavigationRail(docenteId: docenteId, userName: userName)),
           );
+          Notificaciones.showNotification(context, "Inicio de sesión exitoso", color: Colors.teal);
         } else {
           showMessage(context, 'Rol válido pero aún no implementado');
         }
@@ -82,7 +87,6 @@ class _PrincipalLogInScreenState extends State<PrincipalLogInScreen> {
       showMessage(context, 'Error de conexión: $e');
     }
   }
-
 
   @override
   Widget build(BuildContext context){
@@ -292,7 +296,7 @@ class _PrincipalLogInScreenState extends State<PrincipalLogInScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: appColors[0],
         behavior: SnackBarBehavior.floating,
       ),
     );

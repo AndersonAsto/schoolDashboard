@@ -33,18 +33,18 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
 
   Future<void> savePerson() async {
     if (
-    nameController.text.trim().isEmpty ||
-        lastNameController.text.trim().isEmpty ||
-        dniController.text.trim().isEmpty ||
-        emailController.text.trim().isEmpty ||
-        phoneController.text.trim().isEmpty
+      nameController.text.trim().isEmpty ||
+      lastNameController.text.trim().isEmpty ||
+      dniController.text.trim().isEmpty ||
+      emailController.text.trim().isEmpty ||
+      phoneController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Algunos de los campos aún están vacíos.", color: Colors.red);
+      Notificaciones.showNotification(context, "Algunos de los campos aún están vacíos.", color: Colors.red);
       return;
     }
 
     if (idToEdit != null) {
-      Notificaciones.mostrarMensaje(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      Notificaciones.showNotification(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
       return;
     }
 
@@ -73,29 +73,16 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
         });
         clearTextFields();
         idToEdit = null;
-        await getPersons(); // Await to ensure persons are reloaded before notification
-        Notificaciones.mostrarMensaje(context, "Persona guardada correctamente", color: Colors.green);
+        await getPersons();
+        Notificaciones.showNotification(context, "Persona guardada correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al guardar persona", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al guardar persona", color: Colors.red);
         print("Error al guardar persona: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al guardar persona: $e");
     }
-  }
-
-  void clearTextFields (){
-    idController.clear();
-    nameController.clear();
-    lastNameController.clear();
-    dniController.clear();
-    emailController.clear();
-    phoneController.clear();
-    statusController.clear();
-    createdAtController.clear();
-    updatedAtController.clear();
-    filterPersons("");
   }
 
   Future<void> getPersons() async {
@@ -115,28 +102,28 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
           );
         });
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al obtener datos de personas", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al obtener datos de personas", color: Colors.red);
         print("Error al obtener datos de personas: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al obtener datos de personas: $e");
     }
   }
 
   Future<void> updatePerson () async {
     if (idToEdit == null) {
-      Notificaciones.mostrarMensaje(context, "Selecciona una persona para actualizar", color: Colors.red);
+      Notificaciones.showNotification(context, "Selecciona una persona para actualizar", color: Colors.red);
       return;
     }
     if (
-    nameController.text.trim().isEmpty ||
-        lastNameController.text.trim().isEmpty ||
-        dniController.text.trim().isEmpty ||
-        emailController.text.trim().isEmpty ||
-        phoneController.text.trim().isEmpty
+      nameController.text.trim().isEmpty ||
+      lastNameController.text.trim().isEmpty ||
+      dniController.text.trim().isEmpty ||
+      emailController.text.trim().isEmpty ||
+      phoneController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Algunos de los campos aún están vacíos.", color: Colors.red);
+      Notificaciones.showNotification(context, "Algunos de los campos aún están vacíos.", color: Colors.red);
       return;
     }
 
@@ -161,26 +148,14 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
           idToEdit = null;
         });
         await getPersons();
-        Notificaciones.mostrarMensaje(context, "Persona actualizada correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Persona actualizada correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al actualizar persona", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al actualizar persona", color: Colors.red);
         print("Error al actualizar persona: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al actualizar persona: $e");
-    }
-  }
-
-  Future<void> cancelUpdate () async {
-    if (idToEdit != null) {
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
-    } else {
-      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -192,14 +167,39 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
       if (response.statusCode == 200) {
         print("Persona removida: $id");
         await getPersons();
-        Notificaciones.mostrarMensaje(context, "Persona eliminada correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Persona eliminada correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al remover persona", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al remover persona", color: Colors.red);
         print("Error al remover persona: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al remover persona: $e");
+    }
+  }
+
+  void clearTextFields (){
+    idController.clear();
+    nameController.clear();
+    lastNameController.clear();
+    dniController.clear();
+    emailController.clear();
+    phoneController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+    filterPersons("");
+  }
+
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      Notificaciones.showNotification(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.showNotification(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -229,7 +229,6 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
           return fullName.contains(lowerQuery);
         }).toList();
       }
-
       _personsDataSource = _PersonsDataSource(
         personsList: filteredPersonsList,
         onEdit: _handleEditPerson,
@@ -314,8 +313,7 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(onPressed: savePerson, child: const Text("Guardar")),
-                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
-                    IconButton(onPressed: clearTextFields, icon: const Icon(Icons.delete_forever_outlined, color: Colors.deepOrange)),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.clear_all, color: Colors.deepOrange)),
                     ElevatedButton(onPressed: updatePerson, child: const Text("Actualizar")),
                   ],
                 ),
@@ -350,15 +348,13 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
                         DataColumn(label: Text('Creado')),
                         DataColumn(label: Text('Acciones')),
                       ],
-                      source: _personsDataSource, // Our custom data source
-                      rowsPerPage: 10, // Set 15 rows per page
+                      source: _personsDataSource,
+                      rowsPerPage: 10,
                       onPageChanged: (int page) {
-                        // Optional: You can add logic here if you need to do something when the page changes
                         print('Page changed to: $page');
                       },
-                      // Optional: Adjust available rows per page options
                       availableRowsPerPage: const [5, 10, 15, 20, 50],
-                      showCheckboxColumn: false, // Hide checkboxes if not needed
+                      showCheckboxColumn: false,
                     ),
                   ),
                 ),
@@ -401,11 +397,11 @@ class _PersonsDataSource extends DataTableSource {
           children: [
             IconButton(
               icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () => onEdit(person), // Call the onEdit callback
+              onPressed: () => onEdit(person),
             ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => onDelete(person['id']), // Call the onDelete callback
+              onPressed: () => onDelete(person['id']),
             ),
           ],
         )),
@@ -413,10 +409,10 @@ class _PersonsDataSource extends DataTableSource {
     );
   }
   @override
-  bool get isRowCountApproximate => false; // We know the exact row count
+  bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => personsList.length; // Total number of rows
+  int get rowCount => personsList.length;
 
   @override
   int get selectedRowCount => 0;

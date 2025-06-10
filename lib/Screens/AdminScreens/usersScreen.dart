@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:schooldashboard/Global/global.dart';
-import 'dart:convert';
 import 'package:schooldashboard/Utils/customNotifications.dart';
 import 'package:schooldashboard/Utils/customTextFields.dart';
+import 'package:schooldashboard/Global/global.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'dart:convert';
 
 class UsersScreenClass extends StatefulWidget {
   const UsersScreenClass({super.key});
@@ -22,31 +22,14 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
   TextEditingController createdAtController = TextEditingController();
   TextEditingController updatedAtController = TextEditingController();
   TextEditingController personDisplayController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
 
   Map<String,dynamic>? savedUsers;
   List<Map<String, dynamic>> usersList = [];
   int? idToEdit;
   bool _showPassword = false;
-
-  TextEditingController searchController = TextEditingController();
   List<Map<String, dynamic>> filteredUsersList = [];
-
   late _UsersDataSource _usersDataSource;
-
-  void _handleEditUser(Map<String, dynamic> user) {
-    setState(() {
-      idToEdit = user['id'];
-      idController.text = user['id'].toString();
-      personIdController.text = user['persona']['id'].toString();
-      personDisplayController.text = '${user['persona']['id']} - ${user['persona']['nombre']} ${user['persona']['apellido']}';
-      userNameController.text = user['username'];
-      passwordController.text = user['password_hash']; // Be cautious with displaying plain passwords
-      roleController.text = user['rol'];
-      statusController.text = user['estado'].toString();
-      createdAtController.text = user['createdAt'].toString();
-      updatedAtController.text = user['updatedAt'].toString();
-    });
-  }
 
   Future<void> saveUser() async {
     if(
@@ -55,12 +38,12 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
       passwordController.text.trim().isEmpty ||
       roleController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Algunos campos aún están vacíos.", color: Colors.red);
+      Notificaciones.showNotification(context, "Algunos campos aún están vacíos.", color: Colors.red);
       return;
     }
 
     if (idToEdit != null) {
-      Notificaciones.mostrarMensaje(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
+      Notificaciones.showNotification(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
       return;
     }
 
@@ -89,28 +72,15 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
         clearTextFields();
         idToEdit = null;
         await getUsers(); // Await to ensure users are reloaded before notification
-        Notificaciones.mostrarMensaje(context, "Usuario guardado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Usuario guardado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al guardar usuario", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al guardar usuario", color: Colors.red);
         print("Error al guardar usuario: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al guardar usuario: $e");
     }
-  }
-
-  void clearTextFields (){
-    idController.clear();
-    personIdController.clear();
-    userNameController.clear();
-    passwordController.clear();
-    roleController.clear();
-    statusController.clear();
-    createdAtController.clear();
-    updatedAtController.clear();
-    personDisplayController.clear();
-    filterUsers("");
   }
 
   Future<void> getUsers() async {
@@ -130,18 +100,18 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
           );
         });
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al obtener datos de usuarios", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al obtener datos de usuarios", color: Colors.red);
         print("Error al obtener datos de usuarios: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al obtener datos de usuarios: $e");
     }
   }
 
   Future<void> updateUser () async {
     if (idToEdit == null) {
-      Notificaciones.mostrarMensaje(context, "Selecciona un usuario para actualizar", color: Colors.red);
+      Notificaciones.showNotification(context, "Selecciona un usuario para actualizar", color: Colors.red);
       return;
     }
     if(
@@ -150,7 +120,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
         passwordController.text.trim().isEmpty ||
         roleController.text.trim().isEmpty
     ){
-      Notificaciones.mostrarMensaje(context, "Algunos campos aún están vacíos.", color: Colors.red);
+      Notificaciones.showNotification(context, "Algunos campos aún están vacíos.", color: Colors.red);
       return;
     }
 
@@ -174,26 +144,14 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
           idToEdit = null;
         });
         await getUsers();
-        Notificaciones.mostrarMensaje(context, "Usuario actualizado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Usuario actualizado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al actualizar usuario", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al actualizar usuario", color: Colors.red);
         print("Error al actualizar usuario: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al actualizar usuario: $e");
-    }
-  }
-
-  Future<void> cancelUpdate () async {
-    if (idToEdit != null) {
-      setState(() {
-        clearTextFields();
-        idToEdit = null;
-      });
-      Notificaciones.mostrarMensaje(context, "Edición cancelada.", color: Colors.orange);
-    } else {
-      Notificaciones.mostrarMensaje(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
     }
   }
 
@@ -205,15 +163,55 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
       if (response.statusCode == 200) {
         print("Usuario eliminado: $id");
         await getUsers();
-        Notificaciones.mostrarMensaje(context, "Usuario eliminado correctamente", color: Colors.green);
+        Notificaciones.showNotification(context, "Usuario eliminado correctamente", color: Colors.teal);
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al eliminar usuario", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al eliminar usuario", color: Colors.red);
         print("Error al eliminar usuario: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión: $e", color: Colors.red);
       print("Error de conexión al eliminar usuario: $e");
     }
+  }
+
+  void clearTextFields (){
+    idController.clear();
+    personIdController.clear();
+    userNameController.clear();
+    passwordController.clear();
+    roleController.clear();
+    statusController.clear();
+    createdAtController.clear();
+    updatedAtController.clear();
+    personDisplayController.clear();
+    filterUsers("");
+  }
+
+  Future<void> cancelUpdate () async {
+    if (idToEdit != null) {
+      setState(() {
+        clearTextFields();
+        idToEdit = null;
+      });
+      Notificaciones.showNotification(context, "Edición cancelada.", color: Colors.orange);
+    } else {
+      Notificaciones.showNotification(context, "No hay edición activa para cancelar.", color: Colors.blueGrey);
+    }
+  }
+
+  void _handleEditUser(Map<String, dynamic> user) {
+    setState(() {
+      idToEdit = user['id'];
+      idController.text = user['id'].toString();
+      personIdController.text = user['persona']['id'].toString();
+      personDisplayController.text = '${user['persona']['id']} - ${user['persona']['nombre']} ${user['persona']['apellido']}';
+      userNameController.text = user['username'];
+      passwordController.text = user['password_hash'];
+      roleController.text = user['rol'];
+      statusController.text = user['estado'].toString();
+      createdAtController.text = user['createdAt'].toString();
+      updatedAtController.text = user['updatedAt'].toString();
+    });
   }
 
   Future<void> showPersonSelection(BuildContext context) async {
@@ -252,11 +250,11 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
           },
         );
       } else {
-        Notificaciones.mostrarMensaje(context, "Error al cargar personas disponibles", color: Colors.red);
+        Notificaciones.showNotification(context, "Error al cargar personas disponibles", color: Colors.red);
         print("Error al cargar personas disponibles: ${response.body}");
       }
     } catch (e) {
-      Notificaciones.mostrarMensaje(context, "Error de conexión al cargar personas: $e", color: Colors.red);
+      Notificaciones.showNotification(context, "Error de conexión al cargar personas: $e", color: Colors.red);
       print("Error de conexión al cargar personas: $e");
     }
   }
@@ -437,7 +435,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(onPressed: saveUser, child: const Text("Guardar")),
-                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.edit_off, color: Colors.deepOrange)),
+                    IconButton(onPressed: cancelUpdate, icon: const Icon(Icons.clear_all, color: Colors.deepOrange)),
                     ElevatedButton(onPressed: updateUser, child: const Text("Actualizar")),
                   ],
                 ),
@@ -456,7 +454,6 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                   },
                 ),
                 const SizedBox(height: 20),
-
                 SingleChildScrollView(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width),
