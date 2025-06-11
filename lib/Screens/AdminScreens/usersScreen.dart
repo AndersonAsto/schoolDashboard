@@ -321,7 +321,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Usuarios", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black, automaticallyImplyLeading: false,),
+      appBar: AppBar(title: const Text("Registro de Usuarios", style: TextStyle(color: Colors.white),),backgroundColor: appColors[3], automaticallyImplyLeading: false,),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
         focusNode: FocusNode(),
@@ -334,66 +334,51 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Persona", controller: personIdController, enabled: false,)),
-                    const SizedBox(width: 10),
                     Expanded(
-                        child: SizedBox(
-                          height: 36, // Increased height for better tap target
-                          child: GestureDetector(
-                            onTap: () => showPersonSelection(context),
-                            child: AbsorbPointer(
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                decoration: InputDecoration(
-                                  hintText: "Seleccionar Persona",
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                                  border: OutlineInputBorder( // Added border
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[100],
+                      child: SizedBox(
+                        height: 36, // Increased height for better tap target
+                        child: GestureDetector(
+                          onTap: () => showPersonSelection(context),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: const TextStyle(fontSize: 13),
+                              decoration: InputDecoration(
+                                hintText: "Seleccionar Persona",
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                border: OutlineInputBorder( // Added border
+                                  borderRadius: BorderRadius.circular(8.0),
                                 ),
-                                controller: personDisplayController,
+                                filled: true,
+                                fillColor: Colors.grey[100],
                               ),
+                              controller: personDisplayController,
                             ),
                           ),
-                        )
-                    )
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                        child: CustomTextField(label: "Nombre de Usuario", controller: userNameController)
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                        child: SizedBox(
-                          height: 36, // Increased height for better tap target
-                          child: TextField(
-                            controller: passwordController,
-                            obscureText: !_showPassword,
-                            style: const TextStyle(fontSize: 13),
-                            decoration: InputDecoration(
-                              labelText: "Contraseña",
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                              suffixIcon: IconButton(
-                                icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off),
-                                onPressed: () {
-                                  setState(() {
-                                    _showPassword = !_showPassword;
-                                  });
-                                },
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () => showRoleSelection(context),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: const TextStyle(fontSize: 13),
+                              decoration: InputDecoration(
+                                hintText: "Seleccionar Rol", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey[100],
                               ),
-                              border: OutlineInputBorder( // Added border
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey[100],
+                              controller: roleController,
                             ),
                           ),
-                        )
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -401,31 +386,37 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                 Row(
                   children: [
                     Expanded(
-                        child: CustomTextField(label: "Rol", controller: roleController, enabled: false,)
+                      child: CustomTextField(label: "Nombre de Usuario", controller: userNameController),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                        child: SizedBox(
-                          height: 36, // Increased height for better tap target
-                          child: GestureDetector(
-                            onTap: () => showRoleSelection(context),
-                            child: AbsorbPointer(
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                decoration: InputDecoration(
-                                  hintText: "Seleccionar Rol", contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                                  border: OutlineInputBorder( // Added border
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[100],
-                                ),
-                                controller: roleController,
-                              ),
+                      child: SizedBox(
+                        height: 36, // Increased height for better tap target
+                        child: TextField(
+                          controller: passwordController,
+                          obscureText: !_showPassword,
+                          style: const TextStyle(fontSize: 13),
+                          decoration: InputDecoration(
+                            labelText: "Contraseña",
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                            enabled: idToEdit != null? false : true,
+                            suffixIcon: IconButton(
+                              icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off),
+                              onPressed: () {
+                                setState(() {
+                                  _showPassword = !_showPassword;
+                                });
+                              },
                             ),
+                            border: OutlineInputBorder( // Added border
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[100],
                           ),
-                        )
-                    )
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -445,7 +436,7 @@ class _UsersScreenClassState extends State<UsersScreenClass> {
                 TextField(
                   controller: searchController,
                   decoration: const InputDecoration(
-                    labelText: 'Buscar por nombre',
+                    labelText: 'Buscar por nombres o apellidos',
                     prefixIcon: Icon(Icons.search),
                     border: OutlineInputBorder(),
                   ),

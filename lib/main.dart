@@ -21,6 +21,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       home: PrincipalLogInScreen(),
       theme: ThemeData(
+        iconTheme: IconThemeData(color: Colors.black),
         useMaterial3: true,
         primarySwatch: Colors.teal,
         textTheme: GoogleFonts.poppinsTextTheme(
@@ -29,18 +30,19 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
         inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.teal),
-          ),
+            border: OutlineInputBorder(),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.teal),
+            ),
             floatingLabelStyle: TextStyle(color: Colors.teal)
         ),
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.teal,
+          background: Colors.white,
+          surface: Colors.white,
+          onSurface: Colors.black,
         ),
       ),
     );
   }
 }
-
-

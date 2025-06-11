@@ -207,7 +207,7 @@ class _GradesScreenClassState extends State<GradesScreenClass> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),), backgroundColor: Colors.black, automaticallyImplyLeading: false,),
+      appBar: AppBar(title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),), backgroundColor: appColors[3], automaticallyImplyLeading: false,),
       body: SelectableRegion(
         focusNode: FocusNode(),
         selectionControls: materialTextSelectionControls,

@@ -151,28 +151,32 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 36,
-      child: TextField(
-        decoration: InputDecoration(
-          labelText: label,
-          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(
-              width: 1,
-              color: Colors.black,
+    return Row(
+      children: [
+        Expanded(child:
+          SizedBox(
+            height: 36,
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: label,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              style: TextStyle(fontSize: 13),
+              controller: controller,
+              enabled: enabled,
+              keyboardType: keyboardType,
+              inputFormatters: inputFormatters,
             ),
           ),
         ),
-        style: TextStyle(fontSize: 13),
-        controller: controller,
-        enabled: enabled,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-      ),
+      ],
     );
   }
 }

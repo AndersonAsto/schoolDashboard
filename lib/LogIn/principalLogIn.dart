@@ -6,7 +6,6 @@ import 'package:schooldashboard/Navigation/adminNavigationRail.dart';
 import 'package:http/http.dart' as http;
 import 'package:schooldashboard/Navigation/teacherNavigationRail.dart';
 import 'package:schooldashboard/Utils/customNotifications.dart';
-import 'package:schooldashboard/Utils/customTextFields.dart';
 
 class PrincipalLogInScreen extends StatefulWidget {
   const PrincipalLogInScreen({super.key});
@@ -18,7 +17,7 @@ class PrincipalLogInScreen extends StatefulWidget {
 class _PrincipalLogInScreenState extends State<PrincipalLogInScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-
+  bool _showPassword = false;
   final List<String> items = [
     'Administrador',
     'Docente',
@@ -157,7 +156,6 @@ class _PrincipalLogInScreenState extends State<PrincipalLogInScreen> {
                     ),
                   ],
                 ),
-
               ),
             ),
           ),
@@ -263,10 +261,49 @@ class _PrincipalLogInScreenState extends State<PrincipalLogInScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
-        CustomTextField(label: "Usuario", controller: emailController),
-        const SizedBox(height: 20),
-        CustomTextField(label: "Contraseña", controller: passwordController),
+        const SizedBox(height: 30),
+        TextField(
+          controller: emailController,
+          style: const TextStyle(fontSize: 13),
+          decoration: InputDecoration(
+            labelText: "Usuario",
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                width: 1,
+                color: Colors.black,
+              ),
+            ),
+            filled: true,
+          ),
+        ),
+        const SizedBox(height: 30),
+        TextField(
+          controller: passwordController,
+          obscureText: !_showPassword,
+          style: const TextStyle(fontSize: 13),
+          decoration: InputDecoration(
+            labelText: "Contraseña",
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+            suffixIcon: IconButton(
+              icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off),
+              onPressed: () {
+                setState(() {
+                  _showPassword = !_showPassword;
+                });
+              },
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                width: 1,
+                color: Colors.black,
+              ),
+            ),
+            filled: true,
+          ),
+        ),
         const SizedBox(height: 30),
         ElevatedButton(
           onPressed: () => loginUsuario(context),

@@ -47,12 +47,12 @@ class _QualificationsScreenClassState extends State<QualificationsScreenClass> {
 
   Future<void> saveQualification() async {
     if (
-    studentIdController.text.isEmpty ||
-        scheduleIdController.text.isEmpty ||
-        noteController.text.isEmpty ||
-        detailController.text.isEmpty ||
-        dateController.text.isEmpty ||
-        hourController.text.isEmpty
+      studentIdController.text.isEmpty ||
+      scheduleIdController.text.isEmpty ||
+      noteController.text.isEmpty ||
+      detailController.text.isEmpty
+      //dateController.text.isEmpty ||
+      //hourController.text.isEmpty
     ) {
       Notificaciones.showNotification(context, "Por favor completa todos los campos obligatorios", color: Colors.red);
       return;
@@ -62,6 +62,10 @@ class _QualificationsScreenClassState extends State<QualificationsScreenClass> {
       Notificaciones.showNotification(context, "Estás editando un registro. Cancela la edición para guardar uno nuevo.", color: Colors.red);
       return;
     }
+
+    final DateTime now = DateTime.now();
+    dateController.text = DateFormat('yyyy-MM-dd').format(now);
+    hourController.text = _formatTime(TimeOfDay.fromDateTime(now));
 
     final url = Uri.parse('${generalURL}api/qualification/register');
     final Map<String, dynamic> payload = {
@@ -146,9 +150,9 @@ class _QualificationsScreenClassState extends State<QualificationsScreenClass> {
     }
     if (
     noteController.text.isEmpty ||
-        detailController.text.isEmpty ||
-        dateController.text.isEmpty ||
-        hourController.text.isEmpty
+        detailController.text.isEmpty
+        //dateController.text.isEmpty ||
+        // hourController.text.isEmpty
     ) {
       Notificaciones.showNotification(context, "Los campos de Nota, Detalle, Fecha y Hora no pueden estar vacíos.", color: Colors.red);
       return;
@@ -267,8 +271,12 @@ class _QualificationsScreenClassState extends State<QualificationsScreenClass> {
       // Rellena otros campos de la calificación
       noteController.text = qualification['nota'].toString();
       detailController.text = qualification['detalle'] ?? '';
-      dateController.text = qualification['fecha'];
-      hourController.text = qualification['hora'];
+
+      // AUTO-POBLAR FECHA Y HORA CON EL MOMENTO ACTUAL AL EDITAR
+      final DateTime now = DateTime.now();
+      dateController.text = DateFormat('yyyy-MM-dd').format(now);
+      hourController.text = _formatTime(TimeOfDay.fromDateTime(now));
+
       statusController.text = qualification['estado'].toString();
       createdAtController.text = qualification['createdAt'].toString();
       updatedAtController.text = qualification['updatedAt'].toString();
@@ -531,7 +539,7 @@ class _QualificationsScreenClassState extends State<QualificationsScreenClass> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Registro de Calificaciones", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.black,
+        backgroundColor: appColors[3],
         automaticallyImplyLeading: false,
       ),
       body: SelectableRegion(
@@ -698,33 +706,11 @@ class _QualificationsScreenClassState extends State<QualificationsScreenClass> {
                     Expanded(
                       child: SizedBox(
                         height: 36,
-                        child: GestureDetector(
-                          onTap: () async {
-                            final DateTime? pickedDate = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-                            );
-                            if (pickedDate != null) {
-                              dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
-                            }
-                          },
-                          child: AbsorbPointer(
-                            child: TextField(
-                              controller: dateController,
-                              style: const TextStyle(fontSize: 13),
-                              decoration: InputDecoration(
-                                labelText: 'Fecha',
-                                hintText: 'Seleccionar Fecha',
-                                suffixIcon: const Icon(Icons.calendar_today),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                filled: true,
-                                fillColor: Colors.grey[100],
-                              ),
-                            ),
-                          ),
+                        child: CustomTextField(
+                          label: 'Fecha',
+                          controller: dateController,
+                          enabled: false, // NO editable directamente
+                          keyboardType: TextInputType.datetime,
                         ),
                       ),
                     ),
@@ -732,31 +718,11 @@ class _QualificationsScreenClassState extends State<QualificationsScreenClass> {
                     Expanded(
                       child: SizedBox(
                         height: 36,
-                        child: GestureDetector(
-                          onTap: () async {
-                            final TimeOfDay? pickedTime = await showTimePicker(
-                              context: context,
-                              initialTime: TimeOfDay.now(),
-                            );
-                            if (pickedTime != null) {
-                              hourController.text = _formatTime(pickedTime);
-                            }
-                          },
-                          child: AbsorbPointer(
-                            child: TextField(
-                              controller: hourController,
-                              style: const TextStyle(fontSize: 13),
-                              decoration: InputDecoration(
-                                labelText: 'Hora',
-                                hintText: 'Seleccionar Hora',
-                                suffixIcon: const Icon(Icons.access_time),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                filled: true,
-                                fillColor: Colors.grey[100],
-                              ),
-                            ),
-                          ),
+                        child: CustomTextField(
+                          label: 'Hora',
+                          controller: hourController,
+                          enabled: false,
+                          keyboardType: TextInputType.datetime,
                         ),
                       ),
                     ),
@@ -829,7 +795,7 @@ class _QualificationsScreenClassState extends State<QualificationsScreenClass> {
                         DataColumn(label: Text('Detalle')),
                         DataColumn(label: Text('Fecha')),
                         DataColumn(label: Text('Hora')),
-                        DataColumn(label: Text('Estado')),
+                        //DataColumn(label: Text('Estado')),
                         DataColumn(label: Text('Creado')),
                         DataColumn(label: Text('Acciones')),
                       ],
@@ -891,12 +857,12 @@ class _QualificationsDataSource extends DataTableSource {
         DataCell(Text(qualification['id'].toString())),
         DataCell(Text('${alumno?['nombre'] ?? 'N/A'} ${alumno?['apellido'] ?? ''}')),
         DataCell(Text('${schedule?['fecha'] ?? 'N/A'} - $courseName ($gradeName)')),
-        DataCell(Text(double.tryParse(qualification['nota'].toString())?.toStringAsFixed(2) ?? 'N/A')), // Arreglo: Parsea de forma segura a double antes de formatear
+        DataCell(Text(double.tryParse(qualification['nota'].toString())?.toStringAsFixed(2) ?? 'N/A')),
         DataCell(Text(qualification['detalle'] ?? 'N/A')),
-        DataCell(Text(qualification['fecha'] ?? 'N/A')),
-        DataCell(Text(qualification['hora']?.substring(0, 5) ?? 'N/A')), // Muestra HH:mm
-        DataCell(Text(qualification['estado'] == true ? 'Activo' : 'Inactivo')),
-        DataCell(Text(qualification['createdAt']?.toString().substring(0, 10) ?? 'N/A')), // Muestra solo la fecha
+        DataCell(Text(qualification['fecha']?.toString() ?? 'N/A')),
+        DataCell(Text(qualification['hora']?.toString() ?? 'N/A')),
+        //DataCell(Text(qualification['estado'] == true ? 'Activo' : 'Inactivo')),
+        DataCell(Text(qualification['createdAt']?.toString() ?? 'N/A')),
         DataCell(Row(
           children: [
             IconButton(

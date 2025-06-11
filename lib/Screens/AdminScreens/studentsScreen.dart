@@ -277,7 +277,7 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Estudiantes", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black, automaticallyImplyLeading: false,),
+      appBar: AppBar(title: const Text("Registro de Estudiantes", style: TextStyle(color: Colors.white),),backgroundColor: appColors[3], automaticallyImplyLeading: false,),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
         focusNode: FocusNode(),
@@ -290,8 +290,6 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Persona", controller: studentIdController, enabled: false,),),
-                    const SizedBox(width: 10),
                     Expanded(
                       child: SizedBox(
                         height: 36,
@@ -315,12 +313,6 @@ class _StudentsScreenClassState extends State<StudentsScreenClass> {
                         ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController, enabled: false,),),
                     const SizedBox(width: 10),
                     Expanded(
                       child: SizedBox(

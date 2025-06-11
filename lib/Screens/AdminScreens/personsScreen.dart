@@ -253,7 +253,7 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Registro de Grados", style: TextStyle(color: Colors.white),),
-        backgroundColor: Colors.black,
+        backgroundColor: appColors[3],
         automaticallyImplyLeading: false,
       ),
       body: SelectableRegion(
@@ -266,9 +266,14 @@ class _PersonsScreenClassState extends State<PersonsScreenClass> {
               children: [
                 CommonInfoFields(idController: idController, statusController: statusController),
                 const SizedBox(height: 10),
-                CustomTextField(label: "Nombres", controller: nameController, inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]"))]),
-                const SizedBox(height: 10),
-                CustomTextField(label: "Apellidos", controller: lastNameController, inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]"))]),
+                Row(
+                  children: [
+                    Expanded(child: CustomTextField(label: "Nombres", controller: nameController, inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]"))]),),
+                    const SizedBox(width: 10),
+                    Expanded(child: CustomTextField(label: "Apellidos", controller: lastNameController, inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]"))]),
+                    )
+                  ],
+                ),
                 const SizedBox(height: 10),
                 CustomTextField(
                   label: "Correo",

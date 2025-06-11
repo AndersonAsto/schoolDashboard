@@ -351,7 +351,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: AppBar(title: const Text("Registro de Horarios", style: TextStyle(color: Colors.white),),backgroundColor: Colors.black, automaticallyImplyLeading: false,),
+      appBar: AppBar(title: const Text("Registro de Horarios", style: TextStyle(color: Colors.white),),backgroundColor: appColors[3], automaticallyImplyLeading: false,),
       body: SelectableRegion(
         selectionControls: materialTextSelectionControls,
         focusNode: FocusNode(),
@@ -364,8 +364,6 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: CustomTextField(label: "Código de Docente", controller: teacherIdController, enabled: false,)),
-                    const SizedBox(width: 10),
                     Expanded(
                       child: SizedBox(
                         height: 36, // Consistent height
@@ -375,7 +373,7 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                             child: TextField(
                               style: const TextStyle(fontSize: 13), // Use const TextStyle
                               decoration: InputDecoration(
-                                hintText: "Seleccionar Docentes",
+                                hintText: "Seleccionar Docente",
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8.0),
@@ -389,23 +387,45 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                         ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: CustomTextField(label: "Código de Curso", controller: courseIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: SizedBox(
                         height: 36, // Consistent height
                         child: GestureDetector(
-                          onTap: () async => await showCourseSelection(context, courseIdController, courseDisplayController),
+                          onTap: () => showDaySelection(context),
                           child: AbsorbPointer(
                             child: TextField(
                               style: const TextStyle(fontSize: 13), // Use const TextStyle
                               decoration: InputDecoration(
-                                hintText: "Seleccionar Cursos",
+                                hintText: "Seleccionar Día",
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                filled: true,
+                                fillColor: Colors.grey[100],
+                              ),
+                              controller: dayController,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 36,
+                        child: GestureDetector(
+                          onTap: () async => await showCourseSelection(context, courseIdController, courseDisplayController),
+                          child: AbsorbPointer(
+                            child: TextField(
+                              style: const TextStyle(fontSize: 13),
+                              decoration: InputDecoration(
+                                hintText: "Seleccionar Curso",
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8.0),
@@ -419,12 +439,6 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                         ),
                       )
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: CustomTextField(label: "Código de Grado", controller: gradeIdController, enabled: false,)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: SizedBox(
@@ -433,9 +447,9 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                           onTap: () async => await showGradeSelection(context, gradeIdController, gradeDisplayController),
                           child: AbsorbPointer(
                             child: TextField(
-                              style: const TextStyle(fontSize: 13), // Use const TextStyle
+                              style: const TextStyle(fontSize: 13),
                               decoration: InputDecoration(
-                                hintText: "Seleccionar Grados",
+                                hintText: "Seleccionar Grado",
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8.0),
@@ -444,36 +458,6 @@ class _SchedulesScreenClassState extends State<SchedulesScreenClass> {
                                 fillColor: Colors.grey[100],
                               ),
                               controller: gradeDisplayController,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: CustomTextField(label: "Día", controller: dayController, enabled: false)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: SizedBox(
-                        height: 36, // Consistent height
-                        child: GestureDetector(
-                          onTap: () => showDaySelection(context),
-                          child: AbsorbPointer(
-                            child: TextField(
-                              style: const TextStyle(fontSize: 13), // Use const TextStyle
-                              decoration: InputDecoration(
-                                hintText: "Seleccionar Días",
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey[100],
-                              ),
-                              controller: dayController,
                             ),
                           ),
                         ),
